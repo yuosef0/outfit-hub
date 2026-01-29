@@ -1,5 +1,3 @@
-import { BottomNavigation } from '@/components/Navigation';
-
 export default function CustomerLayout({
   children,
 }: {
@@ -8,7 +6,6 @@ export default function CustomerLayout({
   return (
     <>
       {children}
-      <BottomNavigation />
     </>
   );
 }

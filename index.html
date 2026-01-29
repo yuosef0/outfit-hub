@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Outfit Hub - Home</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1f431f",
+                        "background-light": "#f6f7f6",
+                        "background-dark": "#151d15",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2433"
+                    },
+                    fontFamily: {
+                        display: "Inter",
+                        body: ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        lg: "1rem",
+                        xl: "1.5rem",
+                        full: "9999px"
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-[#e0e0e0] antialiased">
+    <div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20">
+        <!-- Top Header -->
+        <header class="sticky top-0 z-40 w-full bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">location_on</span>
+                    <span class="text-sm font-medium">Cairo, Egypt</span>
+                    <span class="material-symbols-outlined text-gray-400">expand_more</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-3 py-1 text-xs font-medium bg-gray-100 rounded">EN</button>
+                    <button class="px-3 py-1 text-xs font-medium">AR</button>
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-gray-700">notifications</span>
+                        <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">3</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="px-4 pt-4 pb-2">
+            <div class="relative flex w-full items-center rounded-xl bg-gray-100 dark:bg-gray-800">
+                <div class="absolute left-4 flex items-center justify-center text-gray-400">
+                    <span class="material-symbols-outlined text-[24px]">search</span>
+                </div>
+                <input class="h-12 w-full rounded-xl bg-transparent pl-12 pr-4 text-sm placeholder:text-gray-400 focus:outline-none border-none" placeholder="Search for brands, products..." type="text"/>
+            </div>
+        </div>
+
+        <!-- Hero Banner Slider -->
+        <div class="px-4 pt-4">
+            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-gray-800 to-gray-600 h-48">
+                <img src="https://images.unsplash.com/photo-1539185441755-769473a23570?w=800" alt="Summer Sale" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay"/>
+                <div class="relative p-6 flex flex-col justify-center h-full">
+                    <p class="text-white text-xs font-semibold mb-2">SUMMER SALE</p>
+                    <h2 class="text-white text-2xl font-bold mb-1">Up to 50% Off</h2>
+                    <p class="text-white text-lg font-medium mb-4">Selected Shoes</p>
+                    <button class="bg-primary text-white px-6 py-2.5 rounded-full font-semibold text-sm w-fit hover:bg-[#2d5a2d] transition-colors">
+                        Shop Now
+                    </button>
+                </div>
+            </div>
+            <!-- Slider Dots -->
+            <div class="flex justify-center gap-2 mt-3">
+                <div class="h-2 w-2 rounded-full bg-primary"></div>
+                <div class="h-2 w-2 rounded-full bg-gray-300"></div>
+                <div class="h-2 w-2 rounded-full bg-gray-300"></div>
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <main class="flex-1 px-4 pt-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Categories</h3>
+                <a href="categories.html" class="text-sm font-medium text-gray-600">See All</a>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-primary">checkroom</span>
+                    </div>
+                    <p class="text-xs font-medium text-center">Clothing</p>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-primary">hiking_boot</span>
+                    </div>
+                    <p class="text-xs font-medium text-center">Shoes</p>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-primary">watch</span>
+                    </div>
+                    <p class="text-xs font-medium text-center">Accessories</p>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-primary">shopping_bag</span>
+                    </div>
+                    <p class="text-xs font-medium text-center">Bags</p>
+                </div>
+            </div>
+
+            <!-- Featured Stores -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Featured Stores</h3>
+                <a href="#" class="text-sm font-medium text-gray-600">See All</a>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white dark:bg-surface-dark rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-full bg-[#d4d89e] flex items-center justify-center">
+                            <span class="text-xs font-bold text-gray-700">VV</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold">Velvet Vibe</h4>
+                            <p class="text-xs text-gray-500">Boutique</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 mb-3">
+                        <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                        <span class="text-sm font-bold">4.8</span>
+                    </div>
+                    <button class="w-full py-2 bg-gray-100 rounded-lg text-sm font-semibold">Visit</button>
+                </div>
+                <div class="bg-white dark:bg-surface-dark rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center">
+                            <span class="text-xs font-bold text-white">UE</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold">Urban Edge</h4>
+                            <p class="text-xs text-gray-500">Streetwear</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 mb-3">
+                        <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                        <span class="text-sm font-bold">4.9</span>
+                    </div>
+                    <button class="w-full py-2 bg-gray-100 rounded-lg text-sm font-semibold">Visit</button>
+                </div>
+            </div>
+
+            <!-- New Arrivals -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">New Arrivals</h3>
+                <a href="#" class="text-sm font-medium text-gray-600">See All</a>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white dark:bg-surface-dark rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                    <div class="relative aspect-square bg-gray-100">
+                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400" alt="Sneakers" class="w-full h-full object-cover"/>
+                        <button class="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+                            <span class="material-symbols-outlined text-xl">favorite_border</span>
+                        </button>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase mb-1">STRIDE LAB</p>
+                        <h4 class="text-sm font-semibold mb-2">Air Cushioned Sneakers</h4>
+                        <p class="text-base font-bold">EGP 2,450</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-surface-dark rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                    <div class="relative aspect-square bg-[#5a7a7a]">
+                        <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400" alt="Leather Bag" class="w-full h-full object-cover"/>
+                        <button class="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+                            <span class="material-symbols-outlined text-xl">favorite_border</span>
+                        </button>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase mb-1">NOIR CHIC</p>
+                        <h4 class="text-sm font-semibold mb-2">Structured Leather Bag</h4>
+                        <p class="text-base font-bold">EGP 4,200</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Offers -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Special Offers</h3>
+                <a href="#" class="text-sm font-medium text-gray-600">See All</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-20">
+                <div class="min-w-[280px] bg-[#e8ebe3] rounded-2xl p-5 border-2 border-dashed border-gray-400">
+                    <p class="text-3xl font-bold mb-2">30% OFF</p>
+                    <p class="text-sm text-gray-700 mb-4">at Zara Nile City Mall</p>
+                    <p class="text-xs text-gray-500 mb-4">VALID UNTIL OCT 15</p>
+                    <button class="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm">CLAIM</button>
+                </div>
+                <div class="min-w-[280px] bg-white rounded-2xl p-5 border border-gray-200">
+                    <p class="text-3xl font-bold mb-2">FREE</p>
+                    <p class="text-sm text-gray-700 mb-4">on orders above 500 EGP</p>
+                    <p class="text-xs text-gray-500 mb-4">LIMITED TIME</p>
+                    <button class="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm">CLAIM</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="fixed bottom-0 left-0 z-50 w-full border-t border-gray-200 bg-white dark:bg-surface-dark px-4 pb-4 pt-2">
+            <div class="flex items-center justify-between gap-2">
+                <a class="flex flex-1 flex-col items-center justify-end gap-1 pt-1" href="index.html">
+                    <span class="material-symbols-outlined text-[26px] text-primary fill-current">home</span>
+                    <p class="text-[10px] font-medium leading-normal tracking-wide text-primary">Home</p>
+                </a>
+                <a class="flex flex-1 flex-col items-center justify-end gap-1 pt-1" href="categories.html">
+                    <span class="material-symbols-outlined text-[26px] text-gray-400 transition-colors hover:text-primary">grid_view</span>
+                    <p class="text-[10px] font-medium leading-normal tracking-wide text-gray-400 hover:text-primary">Categories</p>
+                </a>
+                <a class="flex flex-1 flex-col items-center justify-end gap-1 pt-1" href="#">
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-[26px] text-gray-400 transition-colors hover:text-primary">favorite_border</span>
+                    </div>
+                    <p class="text-[10px] font-medium leading-normal tracking-wide text-gray-400 hover:text-primary">Saved</p>
+                </a>
+                <a class="flex flex-1 flex-col items-center justify-end gap-1 pt-1" href="#">
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-[26px] text-gray-400 transition-colors hover:text-primary">shopping_cart</span>
+                        <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-white">2</span>
+                    </div>
+                    <p class="text-[10px] font-medium leading-normal tracking-wide text-gray-400 hover:text-primary">Cart</p>
+                </a>
+                <a class="flex flex-1 flex-col items-center justify-end gap-1 pt-1" href="#">
+                    <span class="material-symbols-outlined text-[26px] text-gray-400 transition-colors hover:text-primary">person</span>
+                    <p class="text-[10px] font-medium leading-normal tracking-wide text-gray-400 hover:text-primary">Profile</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

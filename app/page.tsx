@@ -1,366 +1,321 @@
 'use client';
 
+import { BottomNavigation } from '@/components/Navigation';
+import Link from 'next/link';
+
 export default function HomePage() {
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-      {/* Top App Bar */}
-      <header className="flex flex-col gap-2 p-4 pb-2 bg-background-light dark:bg-background-dark sticky top-0 z-10">
-        <div className="flex items-center h-12 justify-between">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-text-light-primary dark:text-text-dark-primary text-2xl">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+      {/* Top Header */}
+      <header className="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+        <div className="flex items-center p-4 pb-2 justify-between gap-2">
+          <div className="flex items-center gap-1 flex-1 cursor-pointer">
+            <span
+              className="material-symbols-outlined text-primary"
+              style={{ fontSize: '20px' }}
+            >
               location_on
             </span>
-            <p className="text-text-light-primary dark:text-text-dark-primary tracking-light text-base font-bold leading-tight">
+            <h2 className="text-slate-900 dark:text-white text-sm font-bold leading-tight">
               Cairo, Egypt
-            </p>
-            <span className="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary text-xl">
+            </h2>
+            <span
+              className="material-symbols-outlined text-slate-400"
+              style={{ fontSize: '18px' }}
+            >
               expand_more
             </span>
           </div>
-          <div className="flex items-center justify-end gap-2">
-            <button className="flex items-center justify-center rounded-full h-10 w-10 bg-transparent text-text-light-primary dark:text-text-dark-primary">
-              <span className="material-symbols-outlined text-2xl relative">
+          <div className="flex items-center gap-3">
+            <div className="flex border border-slate-200 dark:border-slate-800 rounded-full p-0.5 bg-slate-100 dark:bg-slate-900">
+              <button className="px-3 py-1 text-[10px] font-bold bg-white dark:bg-primary rounded-full shadow-sm text-primary dark:text-white">
+                EN
+              </button>
+              <button className="px-3 py-1 text-[10px] font-bold text-slate-500">
+                AR
+              </button>
+            </div>
+            <button className="relative flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: '24px' }}
+              >
                 notifications
-                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-background-light dark:ring-background-dark"></span>
               </span>
-            </button>
-            <button className="flex items-center justify-center rounded-full h-10 w-10 text-text-light-primary dark:text-text-dark-primary text-sm font-bold bg-border-light dark:bg-card-dark">
-              EN
+              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-background-dark"></span>
             </button>
           </div>
+        </div>
+        <div className="px-4 py-3">
+          <label className="flex flex-col w-full">
+            <div className="flex w-full items-center rounded-xl bg-slate-100 dark:bg-slate-900 h-12 border border-transparent focus-within:border-primary/30 transition-all">
+              <div className="text-slate-400 flex items-center justify-center pl-4">
+                <span className="material-symbols-outlined">search</span>
+              </div>
+              <input
+                className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 px-3 text-sm"
+                placeholder="Search for brands, products..."
+                readOnly
+              />
+            </div>
+          </label>
         </div>
       </header>
 
-      {/* Search Bar */}
-      <div className="px-4 py-3 sticky top-[72px] z-10 bg-background-light dark:bg-background-dark">
-        <div className="flex flex-col min-w-40 h-12 w-full">
-          <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
-            <div className="text-text-light-secondary dark:text-text-dark-secondary flex border-none bg-card-light dark:bg-card-dark items-center justify-center pl-4 rounded-l-xl border-r-0">
-              <span className="material-symbols-outlined text-2xl">search</span>
-            </div>
-            <input
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-0 border-none bg-card-light dark:bg-card-dark focus:border-none h-full placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-              placeholder="Search for stores & products"
-              defaultValue=""
-            />
-          </div>
-        </div>
-      </div>
-
-      <main className="flex flex-col gap-6 pb-24">
-        {/* Hero Carousel */}
-        <section className="flex flex-col gap-4">
-          <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex items-stretch px-4 gap-3">
-              <div className="flex h-full flex-1 flex-col gap-4 rounded-xl min-w-[calc(100vw-2rem)]">
-                <div
-                  className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                  data-alt="Promotional banner for a new clothing collection"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCFEj2Mi5vrDQu_v-yVcHFa9x9JNTDgoHiQ2CT91363VXe-JgX5EM0A09IbeIEX9i3rpkc0f2s8avF99I5QSj-KwYhRKRCCYnYhKWTz3HxDDjc-__QYFnvxxtC7Lt8yXHyaSxBudUQnulNB3BnbiE5bJpzmjjAseipaEkL-G-arAYCHLjxJHWNAtzBld1Xavbn5cGJa_akqtBihsp_xwMWiRS8MIcqDj3SZ9_IyUqOQk6iunJBWKU8hCAaVF5WnhfaIYigQ2-8hiWk")',
-                  }}
-                ></div>
-              </div>
-              <div className="flex h-full flex-1 flex-col gap-4 rounded-xl min-w-[calc(100vw-2rem)]">
-                <div
-                  className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                  data-alt="Advertisement for a shoe sale event"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQE1sfkxzoraRkpHdJeMnCVn0jbsgKra2X1T0Ux7lymavmd4IYV3n8pvO3SwvxN2rckDFhYT1cNTNQpzTTQTFIeOXP_sjYXTSGkc4t2PIvm98hMlHkP_KZ1Ah-jsWXFzZmrcW28FOe1ogbGk_UwhDbMgVZa39oB1IAyCUfIck8q_X1EMFoycwuBaLbnMHPVySpK-JcPPcaoK3l7Zcz3rZNI_-mOQHYvEBMRXK2Cylk7YqOjh8jeYGTFBjB2_IxzaEQLXj3JPu9-YA")',
-                  }}
-                ></div>
-              </div>
-              <div className="flex h-full flex-1 flex-col gap-4 rounded-xl min-w-[calc(100vw-2rem)]">
-                <div
-                  className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                  data-alt="Special offer on fashion accessories"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxT6encIdTyA15kYFLjnt--FWVNMaXueYT4WpOgQXsrd5LLtxxlxvI0-IqjiXs_JyuMci-8CJsyju5jiMvPAOpVT_DkcCcx53ejMP7uAmT9Jr3zthysntmvuvqBfwRQxpAkKz8bGQaqMGaMqJ-PDaS1O3gzq_KI7djd2HvtJsQYrPWFO0ozmxNqU16B8vTAvfxz_Ne1RTM4aC1EaVZYmkzKoveD6SAAtcK8uLHk-SX7EjrxSPBTbrilVJpcWvMZyw9tHZp68em27U")',
-                  }}
-                ></div>
+      <main className="flex-1 pb-24">
+        {/* Hero Section */}
+        <section className="px-4 py-2">
+          <div className="relative group">
+            <div className="aspect-[16/8] w-full overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
+              <div
+                className="h-full w-full bg-cover bg-center flex flex-col justify-center p-8"
+                data-alt="High fashion models wearing seasonal collection"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRUapn-E7DT-YSpdwH5kAT78hKuBOyeMhjmClqumtPFoEtomw59Bg3fxpOzFVEBtr7-odUw9yWKjsZeCJwTWT2Mil_cydzBvh7ww7ii_X7zLqFm7ECrKQT9PC2tI_WM2Y_lcevfZmVVe1NCtsjUQXHShmE_i643owZpBVjjd0KdMBzD51xh5G56rfEuKIPArTx2RjmKHOuZrlXQyyHImovkwQsnJbeTWBKjB9HCXhhEwG9h2KEb0T1_jP7vO1DiHebYBBPrIkY-3c')",
+                }}
+              >
+                <span className="text-white/80 text-xs font-bold tracking-widest uppercase mb-2">
+                  Summer Sale
+                </span>
+                <h3 className="text-white text-2xl font-bold mb-4">
+                  Up to 50% Off
+                  <br />
+                  Selected Shoes
+                </h3>
+                <button className="w-fit bg-primary text-white px-6 py-2 rounded-lg text-sm font-bold">
+                  Shop Now
+                </button>
               </div>
             </div>
-          </div>
-          <div className="flex w-full flex-row items-center justify-center gap-2">
-            <div className="h-2 w-4 rounded-full bg-primary"></div>
-            <div className="h-2 w-2 rounded-full bg-border-light dark:bg-border-dark"></div>
-            <div className="h-2 w-2 rounded-full bg-border-light dark:bg-border-dark"></div>
+            {/* Pagination Dots */}
+            <div className="flex w-full flex-row items-center justify-center gap-2 py-4">
+              <div className="h-1.5 w-4 rounded-full bg-primary"></div>
+              <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+              <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+            </div>
           </div>
         </section>
 
-        {/* Categories */}
-        <section className="flex flex-col gap-3">
-          <div className="flex justify-between items-center px-4">
-            <h3 className="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]">
+        {/* Categories Section */}
+        <section className="py-4">
+          <div className="flex items-center justify-between px-4 mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               Categories
             </h3>
-            <a className="text-primary text-sm font-semibold" href="#">
+            <Link
+              className="text-primary text-sm font-semibold"
+              href="/categories"
+            >
               See All
-            </a>
+            </Link>
           </div>
-          <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 gap-4">
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-card-light dark:bg-card-dark flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  styler
+          <div className="flex overflow-x-auto gap-6 px-4 no-scrollbar">
+            {[
+              { name: 'Clothing', icon: 'checkroom' },
+              { name: 'Shoes', icon: 'ice_skating' },
+              { name: 'Accessories', icon: 'watch' },
+              { name: 'Bags', icon: 'shopping_bag' },
+              { name: 'Jewelry', icon: 'diamond' },
+            ].map((cat) => (
+              <div
+                key={cat.name}
+                className="flex flex-col items-center gap-2 min-w-[70px]"
+              >
+                <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-primary">
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: '32px' }}
+                  >
+                    {cat.icon}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  {cat.name}
                 </span>
               </div>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs font-medium">
-                Clothing
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-card-light dark:bg-card-dark flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  footprint
-                </span>
-              </div>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs font-medium">
-                Shoes
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-card-light dark:bg-card-dark flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  shopping_bag
-                </span>
-              </div>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs font-medium">
-                Bags
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-card-light dark:bg-card-dark flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  watch
-                </span>
-              </div>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs font-medium">
-                Accessories
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-card-light dark:bg-card-dark flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  diamond
-                </span>
-              </div>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs font-medium">
-                Jewelry
-              </p>
-            </div>
+            ))}
           </div>
         </section>
 
         {/* Featured Stores */}
-        <section className="flex flex-col gap-4">
-          <div className="flex justify-between items-center px-4">
-            <h3 className="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]">
+        <section className="py-4">
+          <div className="flex items-center justify-between px-4 mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               Featured Stores
             </h3>
             <a className="text-primary text-sm font-semibold" href="#">
               See All
             </a>
           </div>
-          <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 gap-4">
-            <div className="flex flex-col w-64 rounded-xl p-4 gap-4 bg-card-light dark:bg-card-dark flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <img
-                  className="w-12 h-12 rounded-full"
-                  data-alt="Store logo for 'Fashion Forward'"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdxVDdqdPHFEJjDVt-3pjnx5yPX-vf98IbKqyTqR1iGF_ZLz9rAb6hnVpmzw-xTOULz8QAQciT4DGVtd9Cn748Q_XdyQw72qtGkilS4omqcqM29zeh_UyQis77-oYoJmhPDQKSgitE6vcjpj2pZdrNa28Ou2rDCnzhSFB6xSGiITmDe5LJ4qiCADe1QNyh-Rn_dckC-eFo4_HIBJhA6_4x4NbE41bB4NlIDdlXiQDENX1G9_yME81aLx12ub1yjoJ0AWQzfkoWR_0"
-                />
-                <div className="flex flex-col">
-                  <h4 className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                    Fashion Forward
-                  </h4>
-                  <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                    Clothing
-                  </p>
+          <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar">
+            {[
+              {
+                name: 'Velvet Vibe',
+                type: 'Boutique',
+                rating: '4.8',
+                image:
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAtMc2XKdP04icoFTp9Vt0MfBcA3nm95ubcD5yNG3q_4zYSujbbnimtc0CGHf9m-8-nVm2L4lQhBppt0NfGCTfz4oaKvdO2L1pNVcq20i6yUZ1bZZARuu6NXrhoBUaPnpxHDEQ-MV4iMji62obf4hU6ZSAB7jFQjjCEGrtPmgdAESqFTsieLW-qpPgjNDYJnQuqnk0KhMlkSr7FDWFQjVk14JNrpqN8qxwEaGLutlirOsCIi8Zy8DuqeYXD9FlzCj3H_rYvv1krWj0',
+              },
+              {
+                name: 'Urban Edge',
+                type: 'Streetwear',
+                rating: '4.9',
+                image:
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAp3yolNqOmqbAJ_g-wvWXni4DypuJ0Xbz4bYPhZyMp1l8_Bm1qh17-aRTMa6-s428NNyT-KAEr-qkHOOQNiPGsOCdCyo3eNxJOOXxQskA7P11EZ39G9_r9RTnQ2ZV9LVUAicK3TC-woIC6dGPajhcpd4CL8QKdIb9h8dK4vQKU51yTZlPotMnBihgNeZ-aqyNpZjq8zjKj_phypfMqRQf0HqC7b-_xONRzeLKthP_tlLLzFBFjmU9CgOFfvw39UJ1IiyzV_sHlKI4',
+              },
+            ].map((store) => (
+              <div
+                key={store.name}
+                className="min-w-[180px] bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                    <div
+                      className="w-full h-full bg-cover"
+                      style={{ backgroundImage: `url('${store.image}')` }}
+                    ></div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold line-clamp-1">
+                      {store.name}
+                    </h4>
+                    <p className="text-[10px] text-slate-500">{store.type}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 mb-4">
                   <span
-                    className="material-symbols-outlined text-yellow-400 text-base"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
+                    className="material-symbols-outlined text-yellow-500"
+                    style={{
+                      fontSize: '14px',
+                      fontVariationSettings: "'FILL' 1",
+                    }}
                   >
                     star
                   </span>
-                  <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary">
-                    4.8
-                  </p>
+                  <span className="text-xs font-bold">{store.rating}</span>
                 </div>
-                <button className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold">
+                <button className="w-full py-2 bg-primary/10 text-primary text-xs font-bold rounded-lg">
                   Visit
                 </button>
               </div>
-            </div>
-            <div className="flex flex-col w-64 rounded-xl p-4 gap-4 bg-card-light dark:bg-card-dark flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <img
-                  className="w-12 h-12 rounded-full"
-                  data-alt="Store logo for 'Sole Mates'"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyKLfY2hJdPXe1FfDbnT_y4KxomGEEM7S4a3LCr17GTfUvC-EO1vc2nhzg5QQ8sd7zAYFycEXcFcDkUNTPhrmqQsRqErcdKz104e4xGwQF6jkO-MaLm3pHP7tEMBf8daC4YNAhje9zklxA3dM9hMCoNWB3tP7ubVqlNjd2B6dBI0OzR-_sTTSQIRG3a1ESye_Nj0m14b4Nww1KI3djKKgxDsp939X5B9rOEW5U8Zg8NiV6TtIzHf0ycsaIaLHYZ_7_TLI4zTHJ_do"
-                />
-                <div className="flex flex-col">
-                  <h4 className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                    Sole Mates
-                  </h4>
-                  <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                    Shoes
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1">
-                  <span
-                    className="material-symbols-outlined text-yellow-400 text-base"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
-                  <p className="text-sm font-semibold text-text-light-secondary dark:text-text-dark-secondary">
-                    4.9
-                  </p>
-                </div>
-                <button className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold">
-                  Visit
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
         {/* New Arrivals */}
-        <section className="flex flex-col gap-4">
-          <div className="flex justify-between items-center px-4">
-            <h3 className="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]">
+        <section className="py-4">
+          <div className="flex items-center justify-between px-4 mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               New Arrivals
             </h3>
             <a className="text-primary text-sm font-semibold" href="#">
               See All
             </a>
           </div>
-          <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 gap-4">
-            <div className="flex flex-col w-40 flex-shrink-0 gap-2">
+          <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar">
+            {[
+              {
+                brand: 'Stride Lab',
+                name: 'Air Cushioned Sneakers',
+                price: 'EGP 2,450',
+                image:
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuBOAXtfmZGtQv17ROrnIXMt7Z-AN-qD2ZEQOT7HlXiXZ3y6O558bQQ3dq44ZU3hs_Fr4uDkKY_IZc5BKg33nnPibXiZKHft40oTclsyKOX9WHmXE1SZVvfEG3pWHoEBJm2AInNYr-irtQ3bZvfZZd-OzM5nRoiC1NXqtPeaaoeCNv4eThgdwSYwJNdYV1IwhJuLXB-xVh5zYyrIVS2LpMaXFJyDfD25MR_MkGvuWVsCtlveUnU3ujt38gQ8cbxZQ4CFaLSBxHNNkk8',
+              },
+              {
+                brand: 'Noir Chic',
+                name: 'Structured Leather Bag',
+                price: 'EGP 4,200',
+                image:
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAiO_LNzCNZJD5pF7wSsdb4du1WbvSfwVIaX9r9lycjVgEFhRpUlZuFR4HAWC32AGZC3Ev3t7UPrqJP5XSfdp_hQpMeanqjboq7f6_H_L64NYTeDprtQMOPs0CDbLJc7KVZLEqL9uDVGn9rcxnPvG_08IasvMuxZL2ga63r7fL_Fvz6nyN0h4SUsnjafXgYm7gjnxR2DR5hzeKu6GXc2-72YcfuECK0Z5CaRF-Sgn1dJVKWSRh7H-NQSYhKieaDPxAGHeMmW2EGES0',
+              },
+            ].map((item) => (
               <div
-                className="relative w-full aspect-square rounded-xl bg-cover bg-center"
-                data-alt="Image of a modern trench coat"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB2UJ3DJUxj9wpGcOOFDitNdHw3uKrJfCp4wiIQwIItsrLxrzNXcwDtjTsnDozlWXnr46rYuqu7H9Ho42_nOo8e3IF2g3635I0-oPDHlF_9drCq1ftjSB95fyGKbbLWg0We3oTUV9iab1eqqlbysd_RRsFesEsYk6d3jAGfAzs1qD6mDzLXFapnjYzFiNdPed8ZNjR-P26iB6jGi4bpCFZoHohGnUB9_1Vk0VOER9NZO298ICY-o21Rkj3jfxI_C7b_T_LdOz8VY7w")',
-                }}
+                key={item.name}
+                className="min-w-[160px] flex flex-col gap-2"
               >
-                <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                  <span className="material-symbols-outlined text-text-light-primary text-xl">
-                    favorite_border
-                  </span>
-                </button>
+                <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900">
+                  <div
+                    className="h-full w-full bg-cover bg-center"
+                    style={{ backgroundImage: `url('${item.image}')` }}
+                  ></div>
+                  <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-sm flex items-center justify-center text-slate-900 dark:text-white">
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: '18px' }}
+                    >
+                      favorite
+                    </span>
+                  </button>
+                </div>
+                <div>
+                  <p className="text-[10px] text-primary font-bold uppercase tracking-wider">
+                    {item.brand}
+                  </p>
+                  <h4 className="text-sm font-medium text-slate-900 dark:text-white line-clamp-1">
+                    {item.name}
+                  </h4>
+                  <p className="text-sm font-bold text-primary mt-1">
+                    {item.price}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                Chic Boutique
-              </p>
-              <h4 className="font-semibold text-sm text-text-light-primary dark:text-text-dark-primary">
-                Modern Trench Coat
-              </h4>
-              <p className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                $120.00
-              </p>
+            ))}
+          </div>
+        </section>
+
+        {/* Special Offers */}
+        <section className="py-4">
+          <div className="flex items-center justify-between px-4 mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Special Offers
+            </h3>
+            <a className="text-primary text-sm font-semibold" href="#">
+              See All
+            </a>
+          </div>
+          <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar">
+            <div className="min-w-[280px] h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute -right-4 -top-4 w-20 h-20 bg-primary/10 rounded-full"></div>
+              <div>
+                <span className="text-2xl font-black text-primary">
+                  30% OFF
+                </span>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  at Zara Nile City Mall
+                </p>
+              </div>
+              <div className="flex items-center justify-between mt-auto">
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                  Valid until Oct 15
+                </span>
+                <span className="text-[10px] bg-primary text-white px-2 py-1 rounded">
+                  CLAIM
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col w-40 flex-shrink-0 gap-2">
-              <div
-                className="relative w-full aspect-square rounded-xl bg-cover bg-center"
-                data-alt="Image of urban sneakers"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuClsv3FonLiO77qFjofmorXocP7-zHCJUVV6ECNHdilum2n6LwDXXYYQmgYtJF1zNj8X6hiMgfW_ZIQTH3e7rpqU359EPJOhccUjQVXiGRVVaDJekE9k33EvDr5GpuFUkvVewy7_Vv0AhsI_pJgJn0N3mzuNEpN6uxi8TBM0W-p9AEyHOopMpDFf01ebeWGsLYnnWvtVNdLPNF_TlZi2y6QmNQs_ATyU7bFMfH3H3lP29U2hq_0zYlmg03I8_wX0sxh_DCYBuAfWTA")',
-                }}
-              >
-                <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                  <span className="material-symbols-outlined text-text-light-primary text-xl">
-                    favorite_border
-                  </span>
-                </button>
+            <div className="min-w-[280px] h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex flex-col justify-between relative overflow-hidden">
+              <div>
+                <span className="text-2xl font-black text-slate-900 dark:text-white">
+                  FREE SHIPPING
+                </span>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  on orders above EGP 1000
+                </p>
               </div>
-              <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                Sole Mates
-              </p>
-              <h4 className="font-semibold text-sm text-text-light-primary dark:text-text-dark-primary">
-                Urban Sneakers
-              </h4>
-              <p className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                $85.00
-              </p>
-            </div>
-            <div className="flex flex-col w-40 flex-shrink-0 gap-2">
-              <div
-                className="relative w-full aspect-square rounded-xl bg-cover bg-center"
-                data-alt="Image of a leather crossbody bag"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPWVpgHeTehXqOow7AqPr0BDs4TpPWVfmYnYf8XPWf0A8rryyZ0HFdl8s69zTbvYoDB3njYTof6J6o6wbwcntIJDkYV2p2B_rp51U7VJO06T9riIX86LB30780797yGwpxiSH8NH0UIoXiqsc24lrJ7XnMFVXZ39tExUFzb8HhVAlK7eumuqj5We-LejS-zkKkv8VW-0xFujnE_wOZ5h2-fkQAGLEWzeAJATBpA0QRF0itU-fSFhwlJ1_58hRRH3VDI7MpRs7gxg4")',
-                }}
-              >
-                <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                  <span
-                    className="material-symbols-outlined text-text-light-primary text-xl"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    favorite
-                  </span>
-                </button>
+              <div className="flex items-center justify-between mt-auto">
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                  Limited Time
+                </span>
+                <span className="text-[10px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-2 py-1 rounded">
+                  AUTO
+                </span>
               </div>
-              <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                Bags &amp; Co.
-              </p>
-              <h4 className="font-semibold text-sm text-text-light-primary dark:text-text-dark-primary">
-                Leather Crossbody
-              </h4>
-              <p className="font-bold text-text-light-primary dark:text-text-dark-primary">
-                $99.00
-              </p>
             </div>
           </div>
         </section>
       </main>
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex justify-around items-center px-4 pb-4 z-50 shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)]">
-        <a className="flex flex-col items-center gap-1 text-[#1f431f] dark:text-white" href="#">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            home
-          </span>
-          <span className="text-xs font-bold">Home</span>
-        </a>
-        <a
-          className="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-[#1f431f] dark:hover:text-white transition-colors"
-          href="#"
-        >
-          <span className="material-symbols-outlined">widgets</span>
-          <span className="text-xs font-medium">Categories</span>
-        </a>
-        <a
-          className="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-[#1f431f] dark:hover:text-white transition-colors"
-          href="#"
-        >
-          <span className="material-symbols-outlined">shopping_cart</span>
-          <span className="text-xs font-medium">Cart</span>
-        </a>
-        <a
-          className="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-[#1f431f] dark:hover:text-white transition-colors"
-          href="#"
-        >
-          <span className="material-symbols-outlined">person</span>
-          <span className="text-xs font-medium">Profile</span>
-        </a>
-      </nav>
+      <BottomNavigation />
     </div>
   );
 }

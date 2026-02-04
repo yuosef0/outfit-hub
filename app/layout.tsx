@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from '@/components/BottomNav';
 
@@ -8,13 +8,6 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-});
-
-const notoSans = Noto_Sans({
-  subsets: ["latin"],
-  variable: "--font-noto-sans",
-  display: "swap",
-  weight: ["400", "500", "700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${notoSans.variable} font-display bg-background-light dark:bg-background-dark antialiased`}
+        className={`${inter.variable} font-display bg-background-light dark:bg-background-dark antialiased`}
       >
         {children}
         <BottomNav />

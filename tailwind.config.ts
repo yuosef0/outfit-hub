@@ -10,11 +10,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#2d5a2d",
+        primary: "#1f431f",
         "primary-light": "#4a7c4a",
         "primary-dark": "#1e3d1e",
-        "background-light": "#fafbfa",
-        "background-dark": "#0f1a0f",
+        "background-light": "#f6f7f6",
+        "background-dark": "#151d15",
         "text-light-primary": "#1a1a1a",
         "text-light-secondary": "#6b7280",
         "text-dark-primary": "#f9fafb",
@@ -23,8 +23,8 @@ const config: Config = {
         "card-dark": "#1a2e1a",
         "border-light": "#e5e7eb",
         "border-dark": "#2d4a2d",
-        "surface-light": "#f3f4f6",
-        "surface-dark": "#162816",
+        "surface-light": "#ffffff",
+        "surface-dark": "#1c2433",
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],

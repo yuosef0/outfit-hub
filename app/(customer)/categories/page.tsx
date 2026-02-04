@@ -1,15 +1,16 @@
 'use client';
 
+import React from 'react';
+import Link from 'next/link';
+
 export default function CategoriesPage() {
     return (
-        <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-[#e0e0e0] antialiased selection:bg-primary selection:text-white">
+        <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-[#e0e0e0] antialiased selection:bg-primary selection:text-white font-[family-name:var(--font-inter)]">
             {/* Top Sticky Header */}
             <header className="sticky top-0 z-40 w-full bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
                 <div className="flex items-center justify-between px-4 py-3 h-14">
                     <div className="w-10"></div> {/* Spacer for centering */}
-                    <h1 className="text-lg font-bold tracking-tight text-[#0d121b] dark:text-white">
-                        Categories
-                    </h1>
+                    <h1 className="text-lg font-bold tracking-tight text-[#0d121b] dark:text-white">Categories</h1>
                     <div className="w-10 flex justify-end">
                         {/* Optional secondary action could go here */}
                     </div>
@@ -21,9 +22,7 @@ export default function CategoriesPage() {
                 <label className="flex flex-col w-full">
                     <div className="relative flex w-full items-center rounded-xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
                         <div className="absolute left-4 flex items-center justify-center text-gray-400">
-                            <span className="material-symbols-outlined text-[24px]">
-                                search
-                            </span>
+                            <span className="material-symbols-outlined text-[24px]">search</span>
                         </div>
                         <input
                             className="h-12 w-full rounded-xl bg-transparent pl-12 pr-4 text-base font-normal text-[#0d121b] dark:text-white placeholder:text-gray-400 focus:outline-none border-none"
@@ -38,7 +37,7 @@ export default function CategoriesPage() {
             <main className="flex-1 p-4">
                 <div className="grid grid-cols-2 gap-4 pb-4">
                     {/* Category Card: Women */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/women" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Women's fashion category showing a modern outfit"
@@ -48,17 +47,13 @@ export default function CategoriesPage() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Women
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                1.2k+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Women</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">1.2k+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Men */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/men" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Men's fashion category with casual wear"
@@ -67,39 +62,29 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Men
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                850+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Men</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">850+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Kids */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/kids" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Kids clothing collection"
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbXhQ8sy_OTQIqM2mZSPWFNLi9ZvNtIeajgfyib-De4WeuPbL7enthyn2ql0nvcxJIu-EGT9ostotiLATYHS29mMy63_LpKlF1UY5nuFZogqmKnON3VumdfMCzC-zNuyc9MmU4IVkxpCtYuYedbSg5j1fpAqWfPA4TBCuxYdwYjT2BO9IyvY-NdgO3lmqhmcdRNx8ik-vCwTu55o9cdVQT0ffy3G-7a1MOsW6N_Idgv9fhS6XZDyhVAb4a3Xs5QGnf10MICeQ9UrE"
                             />
-                            <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
-                                SALE
-                            </span>
+                            <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">SALE</span>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Kids
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                500+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Kids</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">500+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Shoes */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/shoes" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Footwear and shoes collection"
@@ -108,17 +93,13 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Shoes
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                320+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Shoes</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">320+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Accessories */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/accessories" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Accessories like watches and jewelry"
@@ -127,17 +108,13 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Accessories
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                150+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Accessories</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">150+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Bags */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/bags" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Handbags and backpacks"
@@ -146,39 +123,29 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Bags
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                90 items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Bags</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">90 items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Sportswear */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/sportswear" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Sportswear and gym clothing"
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwkyv5PDMcpxl-sK7q8dTcyL7FkBRPDMoosB646PCfYVgvpWB5nNosGh8YUkhIJ2aUwp15i5kbE8w-ABWcXBjTg1qRNCrfb923N887xNNDJPPHV3RiR_bMolpo8qA5Q_vlWhHxBR9TRMVy0Hz0UIdtDTouHWAKmhWkJFTGz50hyXQDJJMT6gff_61NT2Qd1VQBrDXlMHoM4hWHbC6g0FPM2HbCAJowJb69pZTkWHmJBIEzztrBEbNtUTvh9A3V37BAkasLrxyVn0Y"
                             />
-                            <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
-                                NEW
-                            </span>
+                            <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">NEW</span>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Sportswear
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                210+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Sportswear</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">210+ items</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Category Card: Beauty */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
+                    <Link href="/categories/beauty" className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-all active:scale-95 duration-200">
                         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                             <img
                                 alt="Beauty and cosmetics products"
@@ -187,16 +154,12 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">
-                                Beauty
-                            </h3>
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-                                400+ items
-                            </p>
+                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Beauty</h3>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">400+ items</p>
                         </div>
-                    </div>
+                    </Link>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

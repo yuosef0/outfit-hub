@@ -28,7 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} font-display bg-background-light dark:bg-background-dark antialiased`}
+        className={`${inter.variable} font-display bg-gray-50 dark:bg-[#0f1a0f] antialiased`}
       >
         {children}
       </body>

@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useCartUI } from '@/context/CartUIContext';
+
 export default function BottomNav() {
     const pathname = usePathname();
+    const { openCart } = useCartUI();
 
     // Helper function for active/inactive styles
     const getItemStyles = (path: string) => {
@@ -35,6 +38,14 @@ export default function BottomNav() {
                     </div>
                     <p className={homeStyles.text}>Home</p>
                 </Link>
+                <Link className={getItemStyles('/stores').link} href="/stores">
+                    <div className={getItemStyles('/stores').icon} data-icon="Storefront" data-size="24px" data-weight="regular">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M232,96l-20.69-51.73A16,16,0,0,0,196.44,32H59.56A16,16,0,0,0,44.69,44.27L24,96v112a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V96ZM40,96l19.56-48.91,1.15-.29H195.29l1.15.29L216,96v8H192a20,20,0,0,1-40,0H128a20,20,0,0,1-40,0H64a20,20,0,0,1-24,0V96Zm176,112H40V128.79a35.84,35.84,0,0,0,8,2.21,36,36,0,0,0,8,.8,20.1,20.1,0,0,0,19.6-16h24.8a20.1,20.1,0,0,0,19.6,16h16a20.1,20.1,0,0,0,19.6-16h24.8a20.1,20.1,0,0,0,19.6,16,36,36,0,0,0,8-.8,35.84,35.84,0,0,0,8-2.21V208Z"></path>
+                        </svg>
+                    </div>
+                    <p className={getItemStyles('/stores').text}>Stores</p>
+                </Link>
                 <Link className={categoriesStyles.link} href="/categories">
                     <div className={categoriesStyles.icon} data-icon="ListBullets" data-size="24px" data-weight="regular">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -43,14 +54,17 @@ export default function BottomNav() {
                     </div>
                     <p className={categoriesStyles.text}>Categories</p>
                 </Link>
-                <Link className={inactiveStyles.link} href="#">
+                <button
+                    className={inactiveStyles.link}
+                    onClick={openCart}
+                >
                     <div className={inactiveStyles.icon} data-icon="ShoppingCart" data-size="24px" data-weight="regular">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
                             <path d="M222.14,58.87A8,8,0,0,0,216,56H54.68L49.79,29.14A16,16,0,0,0,34.05,16H16a8,8,0,0,0,0,16h18L59.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,152,204a28,28,0,1,0,28-28H83.17a8,8,0,0,1-7.87-6.57L72.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,222.14,58.87ZM96,204a12,12,0,1,1-12-12A12,12,0,0,1,96,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,192,204Zm4-74.57A8,8,0,0,1,188.1,136H69.22L57.59,72H206.41Z"></path>
                         </svg>
                     </div>
                     <p className={inactiveStyles.text}>Cart</p>
-                </Link>
+                </button>
                 <Link className={inactiveStyles.link} href="#">
                     <div className={inactiveStyles.icon} data-icon="Heart" data-size="24px" data-weight="regular">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">

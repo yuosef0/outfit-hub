@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   description: "Discover local stores, find what you love, and pick it up easily",
 };
 
+import { Providers } from "@/components/Providers";
+import CartManager from "@/components/CartManager";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+// ... existing imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,8 +38,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-display bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased selection:bg-primary selection:text-white`}
       >
-        {children}
-        <BottomNav />
+        <Providers>
+          <Header />
+          {children}
+          <Footer />
+          <CartManager />
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   );

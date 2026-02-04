@@ -36,7 +36,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${notoSans.variable} font-display bg-slate-50 antialiased`}
+        className={`${inter.variable} ${notoSans.variable} font-display bg-background-light dark:bg-background-dark antialiased`}
       >
         {children}
         <BottomNav />

@@ -5,15 +5,13 @@ import Link from 'next/link';
 
 export default function CategoriesPage() {
     return (
-        <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-[#e0e0e0] antialiased selection:bg-primary selection:text-white font-[family-name:var(--font-inter)]">
+        <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased selection:bg-primary selection:text-white">
             {/* Top Sticky Header */}
             <header className="sticky top-0 z-40 w-full bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
                 <div className="flex items-center justify-between px-4 py-3 h-14">
-                    <div className="w-10"></div> {/* Spacer for centering */}
-                    <h1 className="text-lg font-bold tracking-tight text-[#0d121b] dark:text-white">Categories</h1>
-                    <div className="w-10 flex justify-end">
-                        {/* Optional secondary action could go here */}
-                    </div>
+                    <div className="w-10"></div>
+                    <h1 className="text-lg font-bold tracking-tight text-text-light-primary dark:text-text-dark-primary">Categories</h1>
+                    <div className="w-10 flex justify-end"></div>
                 </div>
             </header>
 
@@ -25,7 +23,7 @@ export default function CategoriesPage() {
                             <span className="material-symbols-outlined text-[24px]">search</span>
                         </div>
                         <input
-                            className="h-12 w-full rounded-xl bg-transparent pl-12 pr-4 text-base font-normal text-[#0d121b] dark:text-white placeholder:text-gray-400 focus:outline-none border-none"
+                            className="h-12 w-full rounded-xl bg-transparent pl-12 pr-4 text-base font-normal text-text-light-primary dark:text-text-dark-primary placeholder:text-gray-400 focus:outline-none border-none"
                             placeholder="Search for products..."
                             type="text"
                         />
@@ -47,7 +45,7 @@ export default function CategoriesPage() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Women</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Women</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">1.2k+ items</p>
                         </div>
                     </Link>
@@ -62,7 +60,7 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Men</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Men</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">850+ items</p>
                         </div>
                     </Link>
@@ -78,7 +76,7 @@ export default function CategoriesPage() {
                             <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">SALE</span>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Kids</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Kids</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">500+ items</p>
                         </div>
                     </Link>
@@ -93,7 +91,7 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Shoes</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Shoes</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">320+ items</p>
                         </div>
                     </Link>
@@ -108,7 +106,7 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Accessories</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Accessories</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">150+ items</p>
                         </div>
                     </Link>
@@ -123,7 +121,7 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Bags</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Bags</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">90 items</p>
                         </div>
                     </Link>
@@ -139,7 +137,7 @@ export default function CategoriesPage() {
                             <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">NEW</span>
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Sportswear</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Sportswear</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">210+ items</p>
                         </div>
                     </Link>
@@ -154,12 +152,12 @@ export default function CategoriesPage() {
                             />
                         </div>
                         <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-[#0d121b] dark:text-white leading-tight">Beauty</h3>
+                            <h3 className="text-base font-semibold text-text-light-primary dark:text-text-dark-primary leading-tight">Beauty</h3>
                             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">400+ items</p>
                         </div>
                     </Link>
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 }

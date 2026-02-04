@@ -13,18 +13,18 @@ const config: Config = {
         primary: "#1f431f",
         "primary-light": "#4a7c4a",
         "primary-dark": "#1e3d1e",
-        "background-light": "#f6f7f6",
-        "background-dark": "#151d15",
-        "text-light-primary": "#1a1a1a",
-        "text-light-secondary": "#6b7280",
-        "text-dark-primary": "#f9fafb",
-        "text-dark-secondary": "#9ca3af",
+        "background-light": "#f6f7f6", // Zinc-50 like
+        "background-dark": "#09090b", // Zinc-950 - Deep neutral black
+        "text-light-primary": "#18181b", // Zinc-900
+        "text-light-secondary": "#71717a", // Zinc-500
+        "text-dark-primary": "#f4f4f5", // Zinc-100 - Bright white/gray
+        "text-dark-secondary": "#a1a1aa", // Zinc-400
         "card-light": "#ffffff",
-        "card-dark": "#1a2e1a",
-        "border-light": "#e5e7eb",
-        "border-dark": "#2d4a2d",
+        "card-dark": "#18181b", // Zinc-900
+        "border-light": "#e4e4e7", // Zinc-200
+        "border-dark": "#27272a", // Zinc-800
         "surface-light": "#ffffff",
-        "surface-dark": "#1c2433",
+        "surface-dark": "#18181b", // Zinc-900
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],

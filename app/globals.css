@@ -3,19 +3,19 @@
 @layer theme {
   :root {
     --font-display: var(--font-inter);
-    --color-primary: #6366f1;
-    --color-background-light: #fafafa;
-    --color-background-dark: #0a0a0f;
+    --color-primary: #1f431f;
+    --color-background-light: #f6f7f6;
+    --color-background-dark: #09090b;
     --color-text-light-primary: #18181b;
     --color-text-light-secondary: #71717a;
-    --color-text-dark-primary: #fafafa;
+    --color-text-dark-primary: #f4f4f5;
     --color-text-dark-secondary: #a1a1aa;
     --color-card-light: #ffffff;
     --color-card-dark: #18181b;
     --color-border-light: #e4e4e7;
     --color-border-dark: #27272a;
-    --color-surface-light: #f4f4f5;
-    --color-surface-dark: #1f1f23;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #18181b;
     --radius-lg: 1rem;
     --radius-xl: 1.5rem;
   }

@@ -141,13 +141,11 @@ export default function CustomerHome() {
             </div>
             <p className="text-[#0d141b] text-xs font-medium leading-normal tracking-[0.015em]">Home</p>
           </Link>
-          <Link className="flex flex-1 flex-col items-center justify-end gap-1 text-[#4c739a]" href="/categories">
+          <Link className="flex flex-1 flex-col items-center justify-end gap-1 text-[#4c739a]" href="/stores">
             <div className="text-[#4c739a] flex h-8 items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"></path>
-              </svg>
+              <span className="material-symbols-outlined text-2xl">storefront</span>
             </div>
-            <p className="text-[#4c739a] text-xs font-medium leading-normal tracking-[0.015em]">Categories</p>
+            <p className="text-[#4c739a] text-xs font-medium leading-normal tracking-[0.015em]">Stores</p>
           </Link>
           <Link className="flex flex-1 flex-col items-center justify-end gap-1 text-[#4c739a]" href="/cart">
             <div className="text-[#4c739a] flex h-8 items-center justify-center">

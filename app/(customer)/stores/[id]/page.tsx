@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Store, Product } from '@/lib/types';
+import WishlistButton from '@/components/WishlistButton';
 
 export default function StoreProfilePage() {
     const router = useRouter();
@@ -356,9 +357,10 @@ export default function StoreProfilePage() {
                                                     <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">image</span>
                                                 </div>
                                             )}
-                                            <button className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-sm text-gray-600 dark:text-gray-200 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                                <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                            </button>
+                                            <WishlistButton
+                                                productId={product.id}
+                                                className="absolute top-2 right-2 z-10"
+                                            />
                                             {product.stock_quantity === 0 && (
                                                 <div className="absolute bottom-2 left-2 bg-red-500 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">
                                                     SOLD OUT

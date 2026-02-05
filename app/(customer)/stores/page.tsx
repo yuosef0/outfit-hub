@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Store } from '@/lib/types';
@@ -13,9 +13,13 @@ export default function DiscoverStoresPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'newest'>('newest');
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabase = useMemo(
+        () =>
+            createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            ),
+        []
     );
 
     // Fetch stores from database
@@ -41,7 +45,7 @@ export default function DiscoverStoresPage() {
         };
 
         fetchStores();
-    }, []);
+    }, [supabase]);
 
     // Get unique categories from stores
     const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
@@ -119,10 +123,10 @@ export default function DiscoverStoresPage() {
                     {categories.map((category) => (
                         <button
                             key={category}
-                            onClick={() => setActiveCategory(category)}
+                            onClick={() => setActiveCategory(category || 'All')}
                             className={`flex h-9 min-w-[60px] shrink-0 items-center justify-center rounded-full px-4 transition-transform active:scale-95 ${activeCategory === category
-                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                    : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
                                 }`}
                         >
                             <p className="text-sm font-medium leading-normal">{category}</p>

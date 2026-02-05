@@ -65,6 +65,7 @@ export interface Product {
         id: string;
         name: string;
         logo_url?: string;
+        address?: string;
     };
 }
 

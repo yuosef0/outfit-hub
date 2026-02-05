@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
+import WishlistButton from '@/components/WishlistButton';
 import type { Product } from '@/lib/types';
 
 export default function ProductDetailPage() {
@@ -75,8 +76,9 @@ export default function ProductDetailPage() {
   }, [productId, supabase]);
 
   const nextImage = () => {
-    if (product?.image_urls && product.image_urls.length > 0) {
-      setCurrentImageIndex((prev) => (prev + 1) % product.image_urls.length);
+    const images = product?.image_urls;
+    if (images && images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }
   };
 
@@ -244,9 +246,12 @@ export default function ProductDetailPage() {
 
             {/* Actions (Add to Cart) */}
             <div className="flex gap-3 pt-2">
-              <button className="flex-shrink-0 w-14 h-14 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors active:scale-95 group">
-                <span className="material-symbols-outlined text-2xl group-hover:text-red-500 transition-colors">favorite</span>
-              </button>
+              <div className="flex-shrink-0">
+                <WishlistButton
+                  productId={product.id}
+                  className="w-14 h-14 rounded-xl border border-slate-200 dark:border-slate-700 !bg-white dark:!bg-slate-800"
+                />
+              </div>
               <button
                 disabled={product.stock_quantity === 0}
                 className="flex-1 h-14 bg-primary rounded-xl flex items-center justify-center gap-2 text-white font-bold text-base shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"

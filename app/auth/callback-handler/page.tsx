@@ -55,14 +55,18 @@ export default function CallbackHandler() {
                             console.error('Error updating user role:', updateError.message || updateError);
                         }
 
-                        // Check if governorate is missing
-                        if (!existingUser.governorate) {
-                            // Redirect to governorate selection page
-                            if (typeof window !== 'undefined') {
-                                sessionStorage.setItem('needs_governorate', 'true');
+                        // Merchants don't need governorate
+                        if (pendingRole === 'merchant') {
+                            // Will be handled in the main redirect logic below
+                        } else {
+                            // Check if customer needs governorate
+                            if (!existingUser.governorate) {
+                                if (typeof window !== 'undefined') {
+                                    sessionStorage.setItem('needs_governorate', 'true');
+                                }
+                                router.push('/select-governorate');
+                                return;
                             }
-                            router.push('/select-governorate');
-                            return;
                         }
                     } else {
                         // Insert new user without governorate (will be set later)
@@ -80,7 +84,16 @@ export default function CallbackHandler() {
                             console.error('Error creating user:', insertError.message || insertError);
                         }
 
-                        // Redirect to governorate selection
+                        // Merchants don't need governorate, redirect to setup
+                        if (pendingRole === 'merchant') {
+                            if (typeof window !== 'undefined') {
+                                sessionStorage.removeItem('pending_role');
+                            }
+                            router.push('/merchant/setup');
+                            return;
+                        }
+
+                        // Customers need governorate
                         if (typeof window !== 'undefined') {
                             sessionStorage.setItem('needs_governorate', 'true');
                         }
@@ -95,8 +108,25 @@ export default function CallbackHandler() {
 
                     // Redirect based on role
                     if (pendingRole === 'merchant') {
-                        router.push('/merchant/dashboard');
+                        // Check if merchant has a store
+                        const { data: store } = await supabase
+                            .from('stores')
+                            .select('id, is_active')
+                            .eq('merchant_id', user.id)
+                            .maybeSingle();
+
+                        if (!store) {
+                            // No store, redirect to setup
+                            router.push('/merchant/setup');
+                        } else if (!store.is_active) {
+                            // Store exists but not active, redirect to pending
+                            router.push('/merchant/pending');
+                        } else {
+                            // Store exists and active, redirect to dashboard
+                            router.push('/merchant/dashboard');
+                        }
                     } else {
+                        // Customer - redirect to home
                         router.push('/');
                     }
                 } else {
@@ -107,7 +137,28 @@ export default function CallbackHandler() {
                         .eq('id', user.id)
                         .maybeSingle();
 
-                    // Check if governorate is missing
+                    const role = userData?.role || 'customer';
+
+                    // Handle merchant redirects
+                    if (role === 'merchant') {
+                        // Check if merchant has a store
+                        const { data: store } = await supabase
+                            .from('stores')
+                            .select('id, is_active')
+                            .eq('merchant_id', user.id)
+                            .maybeSingle();
+
+                        if (!store) {
+                            router.push('/merchant/setup');
+                        } else if (!store.is_active) {
+                            router.push('/merchant/pending');
+                        } else {
+                            router.push('/merchant/dashboard');
+                        }
+                        return;
+                    }
+
+                    // Customer flow - check governorate
                     if (!userData?.governorate) {
                         if (typeof window !== 'undefined') {
                             sessionStorage.setItem('needs_governorate', 'true');
@@ -116,13 +167,7 @@ export default function CallbackHandler() {
                         return;
                     }
 
-                    const role = userData?.role || 'customer';
-
-                    if (role === 'merchant') {
-                        router.push('/merchant/dashboard');
-                    } else {
-                        router.push('/');
-                    }
+                    router.push('/');
                 }
             } catch (error) {
                 console.error('Callback error:', error);

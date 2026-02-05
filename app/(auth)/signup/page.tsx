@@ -17,6 +17,7 @@ export default function SignUpPage() {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [role, setRole] = useState<'customer' | 'merchant'>('customer');
 
     const supabase = useMemo(
         () =>
@@ -49,21 +50,40 @@ export default function SignUpPage() {
             setIsLoading(true);
             setError(null);
 
-            const { error: signUpError } = await supabase.auth.signUp({
+            const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         full_name: fullName,
                         phone: phone ? `+20${phone}` : null,
+                        role: role,
                     },
                 },
             });
 
             if (signUpError) throw signUpError;
 
-            // Redirect to login or verification page
-            router.push('/login?message=Check your email to verify your account');
+            // Update user role in users table
+            if (data.user) {
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({
+                        role: role,
+                        full_name: fullName,
+                        phone: phone ? `+20${phone}` : null
+                    })
+                    .eq('id', data.user.id);
+
+                if (updateError) console.error('Error updating user role:', updateError);
+            }
+
+            // Redirect based on role
+            if (role === 'merchant') {
+                router.push('/merchant/setup');
+            } else {
+                router.push('/login?message=Check your email to verify your account');
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to sign up');
         } finally {
@@ -77,7 +97,7 @@ export default function SignUpPage() {
             setError(null);
 
             if (typeof window !== 'undefined') {
-                sessionStorage.setItem('pending_role', 'customer');
+                sessionStorage.setItem('pending_role', role);
             }
 
             const { error } = await supabase.auth.signInWithOAuth({
@@ -107,9 +127,60 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Headline */}
-                <h1 className="text-[#0d121b] dark:text-white tracking-tight text-[32px] font-bold leading-tight text-center pb-8">
+                <h1 className="text-[#0d121b] dark:text-white tracking-tight text-[32px] font-bold leading-tight text-center pb-3">
                     Create Account
                 </h1>
+
+                {/* Role Selection */}
+                <div className="w-full mb-6">
+                    <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        اختر نوع الحساب
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setRole('customer')}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${role === 'customer'
+                                    ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                    : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-3xl mb-2 text-primary">
+                                person
+                            </span>
+                            <span className={`font-semibold ${role === 'customer'
+                                    ? 'text-primary'
+                                    : 'text-gray-700 dark:text-gray-300'
+                                }`}>
+                                عميل
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Customer
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setRole('merchant')}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${role === 'merchant'
+                                    ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                    : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-3xl mb-2 text-primary">
+                                store
+                            </span>
+                            <span className={`font-semibold ${role === 'merchant'
+                                    ? 'text-primary'
+                                    : 'text-gray-700 dark:text-gray-300'
+                                }`}>
+                                تاجر
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Merchant
+                            </span>
+                        </button>
+                    </div>
+                </div>
 
                 <form onSubmit={handleEmailSignUp} className="w-full space-y-4">
                     {/* Full Name */}

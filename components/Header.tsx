@@ -1,8 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function Header() {
+  const [userGovernorate, setUserGovernorate] = useState<string>('Cairo, Egypt');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserGovernorate = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('governorate')
+            .eq('id', user.id)
+            .single();
+
+          if (userData?.governorate) {
+            setUserGovernorate(`${userData.governorate}, Egypt`);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching governorate:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserGovernorate();
+  }, []);
+
   return (
     <header
       className="relative z-50 border-b bg-white dark:bg-[#000000] border-slate-200 dark:border-slate-800"
@@ -11,7 +46,9 @@ export default function Header() {
         {/* Location Selector */}
         <div className="flex items-center gap-1 flex-1 cursor-pointer group">
           <span className="material-symbols-outlined text-primary group-hover:opacity-80 transition-opacity" style={{ fontSize: '20px' }}>location_on</span>
-          <h2 className="text-slate-900 dark:text-white text-sm font-bold leading-tight">Cairo, Egypt</h2>
+          <h2 className="text-slate-900 dark:text-white text-sm font-bold leading-tight">
+            {isLoading ? 'Loading...' : userGovernorate}
+          </h2>
           <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style={{ fontSize: '18px' }}>expand_more</span>
         </div>
 
@@ -40,7 +77,7 @@ export default function Header() {
             <input
               className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 text-sm h-full"
               placeholder="Search for brands, products..."
-              readOnly // Making it readonly as per original design, implying it might trigger a modal later
+              readOnly
               suppressHydrationWarning
             />
           </div>

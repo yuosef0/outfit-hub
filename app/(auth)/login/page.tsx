@@ -4,11 +4,13 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
+import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [governorate, setGovernorate] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -28,12 +30,30 @@ export default function LoginPage() {
             setIsLoading(true);
             setError(null);
 
-            const { error } = await supabase.auth.signInWithPassword({
+            if (!governorate) {
+                setError('Please select your governorate');
+                setIsLoading(false);
+                return;
+            }
+
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
-            if (error) throw error;
+            if (authError) throw authError;
+
+            // Update user's governorate
+            if (authData.user) {
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ governorate })
+                    .eq('id', authData.user.id);
+
+                if (updateError) {
+                    console.error('Failed to update governorate:', updateError);
+                }
+            }
 
             router.push('/');
         } catch (err: any) {
@@ -104,6 +124,30 @@ export default function LoginPage() {
                                         required
                                         autoComplete="email"
                                     />
+                                </div>
+                            </label>
+                        </div>
+
+                        {/* Governorate Dropdown */}
+                        <div className="flex w-full flex-wrap items-end gap-4 pb-4">
+                            <label className="flex flex-col w-full flex-1">
+                                <p className="text-[#0d121b] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+                                    Governorate (المحافظة)
+                                </p>
+                                <div className="flex w-full flex-1 items-stretch rounded-lg">
+                                    <select
+                                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfd7e7] dark:border-gray-700 bg-background-light dark:bg-[#000000] focus:border-primary h-14 placeholder:text-[#4c669a] dark:placeholder-gray-500 p-[15px] text-base font-normal leading-normal"
+                                        value={governorate}
+                                        onChange={(e) => setGovernorate(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select your governorate</option>
+                                        {EGYPTIAN_GOVERNORATES.map((gov) => (
+                                            <option key={gov.code} value={gov.name}>
+                                                {gov.name} - {gov.name_ar}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </label>
                         </div>

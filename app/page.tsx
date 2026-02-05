@@ -1,11 +1,97 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SearchModal } from '@/components/SearchModal';
+import { createBrowserClient } from '@supabase/ssr';
+import type { SliderImage, Category, Store, Product } from '@/lib/types';
 
 export default function HomePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [featuredStores, setFeaturedStores] = useState<Store[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch slider images
+        const { data: sliderData } = await supabase
+          .from('slider_images')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        if (sliderData) setSliderImages(sliderData);
+
+        // Fetch categories
+        const { data: categoriesData } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(6);
+
+        if (categoriesData) setCategories(categoriesData);
+
+        // Fetch featured stores (first 4)
+        const { data: storesData } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(4);
+
+        if (storesData) setFeaturedStores(storesData);
+
+        // Fetch new arrivals (latest 6 products)
+        const { data: productsData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(6);
+
+        if (productsData) setNewArrivals(productsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Auto-rotate slider every 3 seconds
+  useEffect(() => {
+    if (sliderImages.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [sliderImages.length]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -13,146 +99,151 @@ export default function HomePage() {
       style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
     >
       <div className="pb-24">
-
+        {/* Slider Section */}
         <div className="@container">
           <div className="@[480px]:px-4 @[480px]:py-3">
-            <div
-              className="bg-cover bg-center flex flex-col justify-end overflow-hidden bg-white dark:bg-black @[480px]:rounded-xl min-h-[218px]"
-              style={{ backgroundImage: 'linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 25%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuCw5nivGPYrZWcARh3zC1c4M4EV0erj_yXcnwuI8wQZI02tFJ4q1VmK4C4pdGm4dR5RzPIXo8GJwrCmso6bgC_koxwT9ejvXt04jTwIb-ulbn_nWH0t-VEcscxpN6SbRNP7Ka6GMNXz3XfWnj1WBPetENxGEodJ2qT40pPFFZvBK2cAYvJaNsgCqHKRgcLR6IMZImJ_6t3XY6XQiKOnV2kdyOk5w5NTm3Cf6nkY_N4QucWWlb2C7pdXUISy8c6og_sL0NKXigdn0wY")' }}
-            >
-              <div className="flex justify-center gap-2 p-5">
-                <div className="size-1.5 rounded-full bg-white"></div>
-                <div className="size-1.5 rounded-full bg-white opacity-50"></div>
-                <div className="size-1.5 rounded-full bg-white opacity-50"></div>
-                <div className="size-1.5 rounded-full bg-white opacity-50"></div>
-                <div className="size-1.5 rounded-full bg-white opacity-50"></div>
-              </div>
+            <div className="relative overflow-hidden bg-white dark:bg-black @[480px]:rounded-xl min-h-[218px]">
+              {sliderImages.length > 0 ? (
+                <>
+                  {sliderImages.map((slide, index) => (
+                    <div
+                      key={slide.id}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      style={{
+                        backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 25%), url("${slide.image_url}")`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
+                      {slide.title && (
+                        <div className="absolute bottom-0 left-0 right-0 p-6">
+                          <h2 className="text-white text-2xl font-bold">{slide.title}</h2>
+                          {slide.description && (
+                            <p className="text-white/90 text-sm mt-1">{slide.description}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {/* Slider Indicators */}
+                  <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
+                    {sliderImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`size-1.5 rounded-full transition-opacity ${index === currentSlide ? 'bg-white' : 'bg-white opacity-50'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-[218px] bg-slate-100 dark:bg-slate-900">
+                  <p className="text-slate-500 dark:text-slate-400">No slider images available</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Categories</h3>
+
+        {/* Categories Section */}
+        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+          Categories
+        </h3>
         <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-stretch p-4 gap-8">
-            <div className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4">
-              <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCh0FGkmosPlESTAez7toDDNAYxLu9G6XjJaJD_7eodx9F00yugRYI1CniccQl92UCMUCX4c5hq8XxbvnEVfXOrEM-aXk1yCXgxTneNJXgyvIB-5FOXyEAKs43o9DfZxYJ8EZchD7ScK2Kwib_t6XZ-abQtC-rI8XYdRnvcuW0HqFCsR9dG5yVwhgdgVICNOlsQsi97FN0SxQJ1NXlNTpCONGxWgKHTxX3fFEbyaqsLmBZhWdbSIvcwrH2nSJRwB-Ug8D1-Z3Ubr1A")' }}
-              ></div>
-              <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Clothing</p>
-            </div>
-            <div className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4">
-              <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDLZSM9zJ1L3m1rsenjDysQRDLMNCwlyRiu3Gq7JZWVrGznqqTT6n0j696Swk2pPKDtxoDWcuu2QRlXiFCKCtwu-wXz9Dj6NGgoOZ0zRXsTN4ibEPIaA9WBEdWjyA4F7loGTbIilW48xWjEjlp8JoAW4KrlHwjt-ILlWHyivjv4XrpKlA82YH0hyWD9FgkBQQkYB09CAJtElpGWReLSz2Rp8JMfblKW1m4NrGaiLCFLKwLwX7yNPEKCYkwEDqDF92yobpNdmRgrncE")' }}
-              ></div>
-              <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Shoes</p>
-            </div>
-            <div className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4">
-              <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaMqU0SQcGOPGwl0joR2LAzeL3LAr9jIkYfozeMDgqm0ZY_DA5Z1XaWUPenYeHbFHagXu45YIBSE_FsAHQv5bTu_orlYE5JneG67E62JQHrWwcjFLKeA03sonFLSG8L9yVmarKWQxe2kjWRZBG2FujyZ-s-BVdPvcgwCLpsThPhMDtjeCL13u_uuj0FvAq5pewqv2bYWGlD5uIx3YnwJzcX2emonHJwyj5euw1K-L7HMU4SRAGfMkfouHwIuS1Ht3hjmfeb7f3y2A")' }}
-              ></div>
-              <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Accessories</p>
-            </div>
+            {categories.length > 0 ? (
+              categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/categories/${category.name.toLowerCase()}`}
+                  className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 hover:opacity-80 transition-opacity"
+                >
+                  <div
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
+                    style={{ backgroundImage: `url("${category.image_url || 'https://via.placeholder.com/150'}")` }}
+                  />
+                  <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">
+                    {category.name}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400 px-4">No categories available</p>
+            )}
           </div>
         </div>
-        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Featured Stores</h3>
+
+        {/* Featured Stores Section */}
+        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+          Featured Stores
+        </h3>
         <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-stretch p-4 gap-3">
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40">
-              <div
-                className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCUaNZjUCPeA4HEQfaWg7NC62ewS94Ixesfk7QT0hjcyDfv_8_riFQR7cNJ4O9CAlAxPAQkt6W8ObHbv4D8HpHvKGmTyOCUQ9Mv10G7tA6HopVeUEYLrKQXuC4yzgGm5uIqQLVM2hSWX8GEF_d8c8iB3_HhITjMhLXqGXGrnB82rZV2Fudt89e7LVIunwhyeISepgdhr8LgMwt1OS6QuF5B1YL1R0shKzDwUWLmoJYr6IAtr2NUd9cXbYs6k9PhZC8QHM4KwxWFXjo")' }}
-              ></div>
-              <div>
-                <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Fashion Hub</p>
-                <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">4.5 • 120 reviews</p>
-              </div>
-            </div>
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40">
-              <div
-                className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJ92JDGlRH4MBOJxP_pTcWpxKslDaAFpjFdJ9QpFfX6FueQZxzI73wI23UtFUJqD5JNonXRVa9os1UqN2iTLmmcNMM6uaFyzxFI2oJMJCYXdYiYwSSHoYUPNUf2vzt_bMEbv0piVvmC2we5FuH2qn-U5QtD_KeQCFECWIxNgDiMBiqEv6LafOQHSy45BO_JEXKddz9_E3A9ieJO-tZO7XX76q8rmLTYhKEq1q2a_IN2y6vwHOXjTsqK9R9uXYO_u-GBiBI5j9wq4U")' }}
-              ></div>
-              <div>
-                <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Footwear Emporium</p>
-                <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">4.2 • 85 reviews</p>
-              </div>
-            </div>
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40">
-              <div
-                className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQQxedAx8M4BMdIUclm1ysr3wrGPV9iWYVdJNiYQLJSRrWz4oEXBRQyTZSDs6KZJ-aifKAABKl2bUzpZoK1EEDE0K_GqcGLyFhyZCeCNDJQgmmKWT6s9yzedTz1ymqYfbqPZ4R3vb1XdFgqPjOUtesW8S9K_pC8WH1swbsjP3NT6HI5AGp45V4AOjsgM4y2NBrGypBzAgG9Iy73ds8JnY4_nUw3Yha173TzQXLVkEDvPRtS9XL6K1z76fnAfxCxYqSzVyFg_pi7N4")' }}
-              ></div>
-              <div>
-                <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Accessory Haven</p>
-                <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">4.8 • 150 reviews</p>
-              </div>
-            </div>
+            {featuredStores.length > 0 ? (
+              featuredStores.map((store) => (
+                <Link
+                  key={store.id}
+                  href={`/stores/${store.id}`}
+                  className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 hover:opacity-80 transition-opacity"
+                >
+                  <div
+                    className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
+                    style={{ backgroundImage: `url("${store.logo_url || 'https://via.placeholder.com/300x200'}")` }}
+                  />
+                  <div>
+                    <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">
+                      {store.name}
+                    </p>
+                    <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">
+                      {store.category || 'Store'}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400 px-4">No featured stores available</p>
+            )}
           </div>
         </div>
-        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">New Arrivals</h3>
+
+        {/* New Arrivals Section */}
+        <h3 className="text-text-light-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+          New Arrivals
+        </h3>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAY3K-7ZiFN3HM6a0p4WOKy_R-nh7sn1maftImj9z8tXFOz5IQ_mdo0hI_zfqf2ksz3YtWwpenNllZt_C1joxeeNqvsQxTfgS3ZJR4vciqei2n_9qigw88L7EFSnW-eFTERnTB-YpDfM8p5ba9dmla4xhIrtitIHMNVt61mMAddN8JrOcSXAmjCXxXEAYmcgd9rXl6lLNI069yPSzeweZ1sUQIDtcJAp7rP_jmRppSL2CaPqC1_hpvex_e4p_0N9wyO0VRRijQrii0")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Summer Dress</p>
-              <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">$49.99</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAA_MtAtDD3q7H1SUxhUdghwUzTNlpwtlPgBlXDdzG2z42749Ul1iE9UtZBZGVJ40A-pWv4nyYtL8ZK1zgiqPXP7r65Scui3-jrfQO539pDLbplL_sC0R0Ohckp-tXvZEjKgBa1lpR9CfpWiD_R7b_FMYPnTyyDGsScvUuzuVIDjZ0SspTNKyzuWZUMt0WDuLu-qMTwY_2JBdnhF1sF_Ti-Za4Wc52JBnPDI2aCcIBGvruKi_Oym0LNGwiuC1m-cPd3_XWnPEcBGio")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">Leather Sandals</p>
-              <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">$39.99</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD31Tlj6_oHZd3YHt9IJv-R-X8nWCltUBpz2ORBAOeOuWaaFB9fWMABIGD4sG81H-0ay0GN2y3rjPQL3JuOrWEITVH6iO4KORY2eTMXgfO-xaZS4zPENiw_I--OXCh8wmxXxTkWHjpoE4OYVzcCPHGz3spWI3UswwLCAHzVyXwikk_U6peZUL8_JXplH0SUQr_HD4lo0cBLc3J0K__V-vItB5oOYdGO56_oJnOFTgb_Zn3VuJlAPPPErXAn2C5CklgASib-nyPQh4I")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-text-dark-primary text-base font-medium leading-normal">Statement Necklace</p>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">$29.99</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAE1dwpj_Ed9AtWJAQJ4lf4vGf4b8FRIHbIaCJV-Ef8AevntPScVI4Er3Sb8VFZO6Cl8qsEzdwTo5qj2fMi1QCIAoLwDk5UhFIx4JJLfQQmFVCJOlSl_PSD2m8Tj6eLNQV_j4WVwXevTL8LQ0wEyjEKiCQFgTPI-9A9ub-JZfgS80EJVv5688o5CarulZBNT9ez65qNHtu-PNehDoMRC2Uq4FIAtuQWhcigyep6yOGSEmWh4m1HSdIqVwCvhxliO7RXazyxJvG6pUg")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-text-dark-primary text-base font-medium leading-normal">Casual Shirt</p>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">$34.99</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBAxe2rBkWCzYa-s0PDu8d8aPBFhk4M9mtm6xcTguTkXGDzeSyZwdbPdA50c9OsJhUQwsocFBpgOxiw0wiIz6O6dcuC_EBELbAnkEtiETRPWIJixFLn9ESYNgvX1M9tw-3eGJDCov1w7B5TbNoxSIHc-uOPeBG1uTyPnj0d7TxFc7_OBQryTXy6-6CNGKw5td5aDzFi4XkVhgVl78K0h7WNikGPosVPD1f6E6QD6AJjO5FK52uxYSP3tGSpl9FInijZI_9VWjRYTUs")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-text-dark-primary text-base font-medium leading-normal">Running Shoes</p>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">$79.99</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pb-3">
-            <div
-              className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2iFMfECdlkxNf1IB3ny2_j-OziuHOUN5khH2Vy_SAgx7QwwleR33b3cQMBMB53BwOGM3rLMYWOTx9i-sw6m_Asuog0fPkqJBcTiDOWglvahRpP0NVwMxPOavact2E8B3K8pDBnw7lAi2tVv9V-a1b_mtGfrAzRW7BPzXouFjjEEST2OjlIu2gA8aKk9aQd8VvwjE-yOVPdIFb0HZ8ZqYDN-lV5aIKptaUmYbHyD7ge9jEdz4ndcODGmNe6ZGyMKgoX7RJ5RCPmLs")' }}
-            ></div>
-            <div>
-              <p className="text-text-light-primary dark:text-text-dark-primary text-base font-medium leading-normal">Stylish Backpack</p>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">$59.99</p>
-            </div>
-          </div>
+          {newArrivals.length > 0 ? (
+            newArrivals.map((product) => (
+              <Link
+                key={product.id}
+                href={`/products/${product.id}`}
+                className="flex flex-col gap-3 pb-3 hover:opacity-80 transition-opacity"
+              >
+                <div
+                  className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
+                  style={{
+                    backgroundImage: `url("${product.image_urls && product.image_urls.length > 0
+                        ? product.image_urls[0]
+                        : 'https://via.placeholder.com/300x400'
+                      }")`,
+                  }}
+                />
+                <div>
+                  <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">
+                    {product.name}
+                  </p>
+                  <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">
+                    ${product.price.toFixed(2)}
+                  </p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p className="text-slate-500 dark:text-slate-400 col-span-full text-center">
+              No new arrivals available
+            </p>
+          )}
         </div>
       </div>
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

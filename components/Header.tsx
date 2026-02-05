@@ -67,22 +67,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="px-4 py-3">
-        <label className="flex flex-col w-full">
-          <div className="flex w-full items-center rounded-xl bg-slate-100/30 dark:bg-slate-900/30 backdrop-blur-md h-12 border border-slate-200/30 dark:border-slate-700/30 focus-within:border-primary/30 transition-all cursor-text group">
-            <div className="text-slate-500 dark:text-slate-400 flex items-center justify-center pl-4 group-focus-within:text-primary transition-colors">
-              <span className="material-symbols-outlined">search</span>
-            </div>
-            <input
-              className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 text-sm h-full"
-              placeholder="Search for brands, products..."
-              readOnly
-              suppressHydrationWarning
-            />
-          </div>
-        </label>
-      </div>
+
     </header>
   );
 }

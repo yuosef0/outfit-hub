@@ -101,6 +101,122 @@ export interface CartItem {
     products?: Product;
 }
 
+// Merchant Experience Types
+
+export type OrderStatus = 'reserved' | 'confirmed' | 'ready' | 'completed' | 'cancelled' | 'expired';
+
+export interface OrderItem {
+    product_id: string;
+    product_name: string;
+    product_image?: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    price: number;
+}
+
+export interface Order {
+    id: string;
+    customer_id: string;
+    store_id: string;
+    pickup_code: string;
+    status: OrderStatus;
+    total_amount: number;
+    commission_amount: number;
+    items: OrderItem[];
+    notes?: string;
+    expires_at: string;
+    completed_at?: string;
+    created_at: string;
+    updated_at: string;
+    // For joined queries
+    stores?: {
+        id: string;
+        name: string;
+        logo_url?: string;
+        address?: string;
+    };
+    customer?: {
+        id: string;
+        full_name?: string;
+        phone?: string;
+        email?: string;
+    };
+}
+
+export type CouponDiscountType = 'percentage' | 'fixed';
+
+export interface Coupon {
+    id: string;
+    store_id: string;
+    code: string;
+    discount_type: CouponDiscountType;
+    discount_value: number;
+    min_order_amount?: number;
+    max_uses?: number;
+    current_uses: number;
+    expires_at?: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export type CommissionStatus = 'pending' | 'paid';
+
+export interface Commission {
+    id: string;
+    order_id: string;
+    store_id: string;
+    amount: number;
+    status: CommissionStatus;
+    paid_at?: string;
+    notes?: string;
+    created_at: string;
+    // For joined queries
+    orders?: Order;
+}
+
+export interface StoreReview {
+    id: string;
+    store_id: string;
+    customer_id: string;
+    order_id?: string;
+    rating: number;
+    comment?: string;
+    merchant_reply?: string;
+    replied_at?: string;
+    created_at: string;
+    updated_at: string;
+    // For joined queries
+    customer?: {
+        id: string;
+        full_name?: string;
+        avatar_url?: string;
+    };
+    orders?: {
+        id: string;
+        items: OrderItem[];
+    };
+}
+
+// Analytics Types
+export interface SalesAnalytics {
+    total_sales: number;
+    total_orders: number;
+    completed_orders: number;
+    cancelled_orders: number;
+    average_order_value: number;
+    commission_total: number;
+}
+
+export interface ProductSalesStats {
+    product_id: string;
+    product_name: string;
+    product_image?: string;
+    total_sold: number;
+    revenue: number;
+}
+
 // Egyptian Governorates
 export const EGYPTIAN_GOVERNORATES: Governorate[] = [
     { code: 'CAI', name: 'Cairo', name_ar: 'القاهرة' },

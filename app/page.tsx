@@ -52,10 +52,17 @@ export default function HomePage() {
 
         if (storesData) setFeaturedStores(storesData);
 
-        // Fetch new arrivals (latest 6 products)
+        // Fetch new arrivals (latest 6 products with store info)
         const { data: productsData } = await supabase
           .from('products')
-          .select('*')
+          .select(`
+            *,
+            stores:store_id (
+              id,
+              name,
+              logo_url
+            )
+          `)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
           .limit(6);
@@ -224,8 +231,8 @@ export default function HomePage() {
                   className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
                   style={{
                     backgroundImage: `url("${product.image_urls && product.image_urls.length > 0
-                        ? product.image_urls[0]
-                        : 'https://via.placeholder.com/300x400'
+                      ? product.image_urls[0]
+                      : 'https://via.placeholder.com/300x400'
                       }")`,
                   }}
                 />
@@ -236,6 +243,11 @@ export default function HomePage() {
                   <p className="text-text-light-secondary dark:text-gray-300 text-sm font-normal leading-normal">
                     ${product.price.toFixed(2)}
                   </p>
+                  {product.stores && (
+                    <p className="text-slate-500 dark:text-slate-400 text-xs font-normal leading-normal mt-1">
+                      {product.stores.name}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))

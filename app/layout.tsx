@@ -37,6 +37,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} font-display bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased selection:bg-primary selection:text-white`}
+        suppressHydrationWarning
       >
         <Providers>
           <Header />

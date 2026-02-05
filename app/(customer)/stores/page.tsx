@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Store } from '@/lib/types';
 
-export default function DiscoverStoresPage() {
-    const [activeCategory, setActiveCategory] = useState('All');
+function DiscoverStoresContent() {
+    const searchParams = useSearchParams();
+    const initialCategory = searchParams.get('category');
+
+    const [activeCategory, setActiveCategory] = useState(initialCategory || 'All');
     const [searchQuery, setSearchQuery] = useState('');
     const [stores, setStores] = useState<Store[]>([]);
     const [filteredStores, setFilteredStores] = useState<Store[]>([]);
@@ -30,7 +34,6 @@ export default function DiscoverStoresPage() {
                 const { data, error } = await supabase
                     .from('stores')
                     .select('*')
-                    // Temporarily removed .eq('is_active', true) to see all stores
                     .order('created_at', { ascending: false });
 
                 console.log('Stores query result:', { data, error });
@@ -56,6 +59,13 @@ export default function DiscoverStoresPage() {
 
         fetchStores();
     }, [supabase]);
+
+    // Update active category when search params change
+    useEffect(() => {
+        if (initialCategory) {
+            setActiveCategory(initialCategory);
+        }
+    }, [initialCategory]);
 
     // Get unique categories from stores
     const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
@@ -232,5 +242,20 @@ export default function DiscoverStoresPage() {
                 )}
             </main>
         </div>
+    );
+}
+
+export default function DiscoverStoresPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-[#000000]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-slate-600 dark:text-slate-400">Loading...</p>
+                </div>
+            </div>
+        }>
+            <DiscoverStoresContent />
+        </Suspense>
     );
 }

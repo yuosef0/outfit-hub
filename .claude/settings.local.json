@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv tool install:*)",
+      "Bash(python -m uv tool install:*)",
+      "Bash(python -m uv tool run:*)"
+    ]
+  }
+}

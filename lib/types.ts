@@ -60,6 +60,12 @@ export interface Product {
     is_active: boolean;
     created_at: string;
     updated_at: string;
+    // For joined queries with store information
+    stores?: {
+        id: string;
+        name: string;
+        logo_url?: string;
+    };
 }
 
 export interface User {

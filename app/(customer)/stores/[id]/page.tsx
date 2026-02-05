@@ -32,21 +32,37 @@ export default function StoreProfilePage() {
     useEffect(() => {
         const fetchStore = async () => {
             try {
+                console.log('Fetching store with ID:', storeId);
                 const { data, error } = await supabase
                     .from('stores')
                     .select('*')
                     .eq('id', storeId)
-                    .single();
+                    .maybeSingle();
 
-                if (error) throw error;
+                console.log('Store query result:', { data, error });
+
+                if (error) {
+                    console.error('Supabase error fetching store:', error.message);
+                    throw error;
+                }
+
+                if (!data) {
+                    console.log('Store not found');
+                    setStore(null);
+                    return;
+                }
+
                 setStore(data);
-            } catch (error) {
-                console.error('Error fetching store:', error);
+                console.log('Store set:', data.name);
+            } catch (error: any) {
+                console.error('Error fetching store:', error.message || error);
             }
         };
 
         if (storeId) {
             fetchStore();
+        } else {
+            console.log('No storeId in URL params');
         }
     }, [storeId, supabase]);
 
@@ -54,16 +70,24 @@ export default function StoreProfilePage() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
+                console.log('Fetching products for store:', storeId);
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
                     .eq('store_id', storeId)
-                    .eq('is_active', true)
+                    // Temporarily removed .eq('is_active', true) to see all products
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                console.log('Products query result:', { data, error, count: data?.length });
+
+                if (error) {
+                    console.error('Supabase error fetching products:', error);
+                    throw error;
+                }
+
                 setProducts(data || []);
                 setFilteredProducts(data || []);
+                console.log('Products set:', data?.length || 0);
             } catch (error) {
                 console.error('Error fetching products:', error);
             } finally {
@@ -73,6 +97,9 @@ export default function StoreProfilePage() {
 
         if (storeId) {
             fetchProducts();
+        } else {
+            console.log('No storeId provided');
+            setIsLoading(false);
         }
     }, [storeId, supabase]);
 

@@ -57,13 +57,17 @@ export default function CustomerHome() {
         <div className="flex overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-stretch p-4 gap-8">
             {categories.map((category) => (
-              <div key={category.name} className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4">
+              <Link
+                href={`/stores?category=${category.name}`}
+                key={category.name}
+                className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 cursor-pointer hover:opacity-80 transition-opacity"
+              >
                 <div
                   className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
                   style={{ backgroundImage: `url("${category.image}")` }}
                 ></div>
                 <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal">{category.name}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -37,7 +37,7 @@ export default function CallbackHandler() {
                     // Check if user exists first
                     const { data: existingUser } = await supabase
                         .from('users')
-                        .select('id')
+                        .select('id, governorate')
                         .eq('id', user.id)
                         .maybeSingle();
 
@@ -54,8 +54,18 @@ export default function CallbackHandler() {
                         if (updateError) {
                             console.error('Error updating user role:', updateError.message || updateError);
                         }
+
+                        // Check if governorate is missing
+                        if (!existingUser.governorate) {
+                            // Redirect to governorate selection page
+                            if (typeof window !== 'undefined') {
+                                sessionStorage.setItem('needs_governorate', 'true');
+                            }
+                            router.push('/select-governorate');
+                            return;
+                        }
                     } else {
-                        // Insert new user
+                        // Insert new user without governorate (will be set later)
                         const { error: insertError } = await supabase
                             .from('users')
                             .insert({
@@ -69,6 +79,13 @@ export default function CallbackHandler() {
                         if (insertError) {
                             console.error('Error creating user:', insertError.message || insertError);
                         }
+
+                        // Redirect to governorate selection
+                        if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('needs_governorate', 'true');
+                        }
+                        router.push('/select-governorate');
+                        return;
                     }
 
                     // Clear pending role
@@ -86,9 +103,18 @@ export default function CallbackHandler() {
                     // No pending role, get from database or default to customer
                     const { data: userData } = await supabase
                         .from('users')
-                        .select('role')
+                        .select('role, governorate')
                         .eq('id', user.id)
                         .maybeSingle();
+
+                    // Check if governorate is missing
+                    if (!userData?.governorate) {
+                        if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('needs_governorate', 'true');
+                        }
+                        router.push('/select-governorate');
+                        return;
+                    }
 
                     const role = userData?.role || 'customer';
 

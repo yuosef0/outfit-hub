@@ -80,6 +80,15 @@ export interface User {
     updated_at: string;
 }
 
+export interface Wishlist {
+    id: string;
+    user_id: string;
+    product_id: string;
+    created_at: string;
+    // For joined queries
+    products?: Product;
+}
+
 // Egyptian Governorates
 export const EGYPTIAN_GOVERNORATES: Governorate[] = [
     { code: 'CAI', name: 'Cairo', name_ar: 'القاهرة' },

@@ -1,77 +1,50 @@
 'use client';
 
-import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
-import { ThemeToggleCompact } from './ThemeToggle';
+import React from 'react';
 
-export function Header() {
-  const { isAuthenticated, user } = useAuth();
-  const { totalItems } = useCart();
-
+export default function Header() {
   return (
-    <header className="flex flex-col gap-2 p-4 pb-2 bg-background-light dark:bg-background-dark sticky top-0 z-10">
-      <div className="flex items-center h-12 justify-between">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-text-light-primary dark:text-text-dark-primary text-2xl">
-            location_on
-          </span>
-          <p className="text-text-light-primary dark:text-text-dark-primary tracking-light text-base font-bold leading-tight">
-            Cairo, Egypt
-          </p>
-          <span className="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary text-xl">
-            expand_more
-          </span>
+    <header
+      className="relative z-50 border-b bg-white dark:bg-[#000000] border-slate-200 dark:border-slate-800"
+    >
+      <div className="flex items-center p-4 pb-2 justify-between gap-2">
+        {/* Location Selector */}
+        <div className="flex items-center gap-1 flex-1 cursor-pointer group">
+          <span className="material-symbols-outlined text-primary group-hover:opacity-80 transition-opacity" style={{ fontSize: '20px' }}>location_on</span>
+          <h2 className="text-slate-900 dark:text-white text-sm font-bold leading-tight">Cairo, Egypt</h2>
+          <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style={{ fontSize: '18px' }}>expand_more</span>
         </div>
-        <div className="flex items-center justify-end gap-2">
-          <Link
-            href="/notifications"
-            className="flex items-center justify-center rounded-full h-10 w-10 bg-transparent text-text-light-primary dark:text-text-dark-primary"
-          >
-            <span className="material-symbols-outlined text-2xl relative">
-              notifications
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-background-light dark:ring-background-dark"></span>
-            </span>
-          </Link>
-          <ThemeToggleCompact />
-          {isAuthenticated ? (
-            <Link
-              href="/profile"
-              className="flex items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary text-sm font-bold"
-            >
-              {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="flex items-center justify-center rounded-full h-10 w-10 text-text-light-primary dark:text-text-dark-primary text-sm font-bold bg-border-light dark:bg-card-dark"
-            >
-              EN
-            </Link>
-          )}
+
+        <div className="flex items-center gap-3">
+          {/* Language Toggle */}
+          <div className="flex border border-slate-200 dark:border-slate-800 rounded-full p-0.5 bg-slate-100 dark:bg-slate-900">
+            <button className="px-3 py-1 text-[10px] font-bold bg-white dark:bg-primary rounded-full shadow-sm text-primary dark:text-white transition-all">EN</button>
+            <button className="px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">AR</button>
+          </div>
+
+          {/* Notifications */}
+          <button className="relative flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>notifications</span>
+            <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-background-dark"></span>
+          </button>
         </div>
       </div>
-    </header>
-  );
-}
 
-// Simple header for internal pages
-export function SimpleHeader({ title, showBack = true }: { title: string; showBack?: boolean }) {
-  return (
-    <header className="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors">
-      <div className="flex items-center justify-between px-4 h-14">
-        {showBack ? (
-          <Link
-            href="/"
-            className="size-10 flex items-center justify-center rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-900 dark:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
-          </Link>
-        ) : (
-          <div className="w-10"></div>
-        )}
-        <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
-        <div className="w-10"></div>
+      {/* Search Bar */}
+      <div className="px-4 py-3">
+        <label className="flex flex-col w-full">
+          <div className="flex w-full items-center rounded-xl bg-slate-100/30 dark:bg-slate-900/30 backdrop-blur-md h-12 border border-slate-200/30 dark:border-slate-700/30 focus-within:border-primary/30 transition-all cursor-text group">
+            <div className="text-slate-500 dark:text-slate-400 flex items-center justify-center pl-4 group-focus-within:text-primary transition-colors">
+              <span className="material-symbols-outlined">search</span>
+            </div>
+            <input
+              className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 text-sm h-full"
+              placeholder="Search for brands, products..."
+              readOnly // Making it readonly as per original design, implying it might trigger a modal later
+              suppressHydrationWarning
+            />
+          </div>
+        </label>
       </div>
     </header>
   );

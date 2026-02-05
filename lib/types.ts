@@ -90,6 +90,17 @@ export interface Wishlist {
     products?: Product;
 }
 
+export interface CartItem {
+    id: string;
+    user_id: string;
+    product_id: string;
+    quantity: number;
+    created_at: string;
+    updated_at: string;
+    // For joined queries
+    products?: Product;
+}
+
 // Egyptian Governorates
 export const EGYPTIAN_GOVERNORATES: Governorate[] = [
     { code: 'CAI', name: 'Cairo', name_ar: 'القاهرة' },

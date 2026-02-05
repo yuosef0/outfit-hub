@@ -1,68 +1,136 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import type { CartItem, Product } from '@/lib/types';
+
+interface GroupedCartItems {
+  [storeId: string]: {
+    storeName: string;
+    storeLogo?: string;
+    items: (CartItem & { products: Product })[];
+  };
+}
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      storeName: 'Zara Official Store',
-      storeId: 'store1',
-      name: 'Premium Slim Fit Linen Shirt',
-      color: 'Navy',
-      size: 'L',
-      price: 45.00,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      storeName: 'Zara Official Store',
-      storeId: 'store1',
-      name: 'Classic Leather Chelsea Boots',
-      color: 'Black',
-      size: '42',
-      price: 120.00,
-      quantity: 1,
-    },
-    {
-      id: 3,
-      storeName: 'Nike Store',
-      storeId: 'store2',
-      name: 'Nike Air Max 270 React',
-      color: 'Red',
-      size: '10',
-      price: 150.00,
-      quantity: 1,
-    },
-  ]);
+  const router = useRouter();
+  const [cartItems, setCartItems] = useState<(CartItem & { products: Product })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const updateQuantity = (id: number, delta: number) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
+
+  useEffect(() => {
+    fetchCart();
+  }, [supabase]);
+
+  const fetchCart = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('cart_items')
+        .select(`
+                    *,
+                    products:product_id (
+                        *,
+                        stores:store_id (
+                            id,
+                            name,
+                            logo_url
+                        )
+                    )
+                `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        setCartItems(data as any);
+      }
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+  const updateQuantity = async (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
+        .eq('id', itemId);
+
+      if (!error) {
+        setCartItems(prev =>
+          prev.map(item =>
+            item.id === itemId ? { ...item, quantity: newQuantity } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
   };
 
-  const groupedItems = cartItems.reduce((acc, item) => {
-    if (!acc[item.storeId]) {
-      acc[item.storeId] = {
-        storeName: item.storeName,
+  const removeItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (!error) {
+        setCartItems(prev => prev.filter(item => item.id !== itemId));
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+    }
+  };
+
+  const groupedItems: GroupedCartItems = cartItems.reduce((acc, item) => {
+    if (!item.products?.stores) return acc;
+
+    const storeId = item.products.stores.id;
+    if (!acc[storeId]) {
+      acc[storeId] = {
+        storeName: item.products.stores.name,
+        storeLogo: item.products.stores.logo_url,
         items: [],
       };
     }
-    acc[item.storeId].items.push(item);
+    acc[storeId].items.push(item);
     return acc;
-  }, {} as Record<string, { storeName: string; items: typeof cartItems }>);
+  }, {} as GroupedCartItems);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-200">
@@ -70,15 +138,14 @@ export default function CartPage() {
       <header className="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors">
         <div className="flex items-center justify-between px-4 h-14">
           <button
+            onClick={() => router.back()}
             aria-label="Go back"
             className="size-10 flex items-center justify-center rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-900 dark:text-white transition-colors"
           >
             <span className="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
           <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">My Cart</h1>
-          <button className="h-10 px-2 flex items-center justify-center text-primary font-semibold text-sm hover:opacity-80 transition-opacity">
-            Edit
-          </button>
+          <div className="w-10"></div>
         </div>
       </header>
 
@@ -86,18 +153,22 @@ export default function CartPage() {
       <main className="flex-1 overflow-y-auto no-scrollbar pb-40 px-4 pt-2">
         {cartItems.length > 0 ? (
           <div className="space-y-6">
-            {Object.entries(groupedItems).map(([storeId, { storeName, items }]) => (
+            {Object.entries(groupedItems).map(([storeId, { storeName, storeLogo, items }]) => (
               <section key={storeId} className="flex flex-col gap-3">
                 {/* Store Header */}
-                <div className="flex items-center gap-3 px-1 py-1">
+                <Link href={`/stores/${storeId}`} className="flex items-center gap-3 px-1 py-1 hover:opacity-80 transition-opacity">
                   <div className="size-8 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
-                    <span className="material-symbols-outlined text-primary text-base">store</span>
+                    {storeLogo ? (
+                      <img src={storeLogo} alt={storeName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-outlined text-primary text-base">store</span>
+                    )}
                   </div>
                   <div className="flex-1 flex items-center gap-1">
                     <h2 className="font-semibold text-sm text-slate-900 dark:text-slate-100">{storeName}</h2>
                     <span className="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
                   </div>
-                </div>
+                </Link>
 
                 {/* Cart Items */}
                 {items.map((item) => (
@@ -106,17 +177,23 @@ export default function CartPage() {
                     className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-sm flex gap-4 transition-colors"
                   >
                     {/* Product Image */}
-                    <div className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-900 transition-transform duration-500 group-hover:scale-105"></div>
-                    </div>
+                    <Link href={`/products/${item.products.id}`} className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
+                      <img
+                        src={item.products.image_urls?.[0] || 'https://via.placeholder.com/300x400'}
+                        alt={item.products.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </Link>
 
                     {/* Content */}
                     <div className="flex flex-col flex-1 justify-between py-0.5">
                       <div>
                         <div className="flex justify-between items-start gap-3">
-                          <h3 className="font-semibold text-sm text-slate-900 dark:text-white leading-snug line-clamp-2">
-                            {item.name}
-                          </h3>
+                          <Link href={`/products/${item.products.id}`}>
+                            <h3 className="font-semibold text-sm text-slate-900 dark:text-white leading-snug line-clamp-2 hover:text-primary transition-colors">
+                              {item.products.name}
+                            </h3>
+                          </Link>
                           <button
                             onClick={() => removeItem(item.id)}
                             aria-label="Remove item"
@@ -125,20 +202,22 @@ export default function CartPage() {
                             <span className="material-symbols-outlined text-[20px]">delete</span>
                           </button>
                         </div>
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1.5">
-                          Color: {item.color} • Size: {item.size}
-                        </p>
+                        {item.products.category && (
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1.5">
+                            {item.products.category}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-end justify-between mt-3">
                         <span className="font-bold text-base text-primary dark:text-blue-400">
-                          ${item.price.toFixed(2)}
+                          ${item.products.price.toFixed(2)}
                         </span>
 
                         {/* Quantity Stepper */}
                         <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 h-8 shadow-inner">
                           <button
-                            onClick={() => updateQuantity(item.id, -1)}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             aria-label="Decrease quantity"
                             className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all"
                           >
@@ -148,7 +227,7 @@ export default function CartPage() {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.id, 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             aria-label="Increase quantity"
                             className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all"
                           >
@@ -186,9 +265,12 @@ export default function CartPage() {
                 Looks like you haven&apos;t added anything to your cart yet. Explore our latest collections!
               </p>
             </div>
-            <button className="mt-8 flex items-center justify-center px-8 h-11 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">
+            <Link
+              href="/"
+              className="mt-8 flex items-center justify-center px-8 h-11 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
+            >
               Start Shopping
-            </button>
+            </Link>
           </div>
         )}
       </main>

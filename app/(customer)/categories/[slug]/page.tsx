@@ -1,371 +1,194 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { productSchema } from '@/lib/validators';
-import { z } from 'zod';
-
-// Extend the Zod schema for UI-specific fields that might exist in DB or need defaults
-interface Product extends z.infer<typeof productSchema> {
-    id: string;
-    image_url: string;
-    brand?: string;
-    discount_price?: number;
-    is_bestseller?: boolean;
-}
-
-// Dummy products for demonstration
-const dummyProducts: Product[] = [
-    {
-        id: 'dummy-1',
-        name: 'Cotton Crew Neck T-Shirt',
-        price: 14.90,
-        image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=600&fit=crop',
-        brand: 'Uniqlo',
-        category: 'T-Shirts',
-        description: 'Classic white crew neck t-shirt',
-        stock_quantity: 50,
-        gender_filter: 'male',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-2',
-        name: 'Original Trucker Jacket',
-        price: 89.00,
-        image_url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=600&fit=crop',
-        brand: "Levi's",
-        category: 'Jackets',
-        description: 'Blue denim trucker jacket',
-        stock_quantity: 30,
-        gender_filter: 'male',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-3',
-        name: 'Air Zoom Pegasus 39',
-        price: 120.00,
-        image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=600&fit=crop',
-        brand: 'Nike',
-        category: 'Shoes',
-        description: 'Red Nike running shoes',
-        stock_quantity: 25,
-        gender_filter: 'unisex',
-        is_bestseller: true
-    },
-    {
-        id: 'dummy-4',
-        name: '10" Vintage Shorts',
-        price: 45.00,
-        image_url: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=600&fit=crop',
-        brand: 'Gap',
-        category: 'Pants & Shorts',
-        description: 'Khaki shorts folded neatly',
-        stock_quantity: 40,
-        gender_filter: 'male',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-5',
-        name: 'The Performance Chino',
-        price: 72.00,
-        image_url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=600&fit=crop',
-        brand: 'Everlane',
-        category: 'Pants & Shorts',
-        description: 'Minimalist olive green chino pants',
-        stock_quantity: 35,
-        gender_filter: 'male',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-6',
-        name: 'Old Skool Canvas',
-        price: 65.00,
-        discount_price: 75.00,
-        image_url: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&h=600&fit=crop',
-        brand: 'Vans',
-        category: 'Shoes',
-        description: 'Pair of casual canvas sneakers',
-        stock_quantity: 45,
-        gender_filter: 'unisex',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-7',
-        name: 'Classic Polo Shirt',
-        price: 39.90,
-        image_url: 'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&h=600&fit=crop',
-        brand: 'Ralph Lauren',
-        category: 'T-Shirts',
-        description: 'Navy blue polo shirt',
-        stock_quantity: 60,
-        gender_filter: 'male',
-        is_bestseller: false
-    },
-    {
-        id: 'dummy-8',
-        name: 'Slim Fit Jeans',
-        price: 79.00,
-        image_url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=600&fit=crop',
-        brand: "Levi's",
-        category: 'Pants & Shorts',
-        description: 'Dark wash slim fit jeans',
-        stock_quantity: 55,
-        gender_filter: 'male',
-        is_bestseller: true
-    }
-];
+import Link from 'next/link';
+import { createBrowserClient } from '@supabase/ssr';
+import type { Store } from '@/lib/types';
 
 export default function CategoryDetailPage() {
     const router = useRouter();
     const params = useParams();
     const slug = typeof params?.slug === 'string' ? params.slug : Array.isArray(params?.slug) ? params.slug[0] : '';
 
-    const [selectedGender, setSelectedGender] = useState('Men');
-    const [selectedSubcategory, setSelectedSubcategory] = useState('All');
-    const [products, setProducts] = useState<Product[]>([]);
+    const [stores, setStores] = useState<Store[]>([]);
+    const [filteredStores, setFilteredStores] = useState<Store[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const subcategories = ['All', 'T-Shirts', 'Pants & Shorts', 'Shoes', 'Accessories'];
-    const genders = ['Men', 'Women', 'Kids'];
+    const supabase = useMemo(
+        () =>
+            createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            ),
+        []
+    );
 
+    // Fetch stores from database
     useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
+        const fetchStores = async () => {
             try {
-                let query = supabase.from('products').select('*');
+                const categoryName = slug.replace(/-/g, ' ');
 
-                const genderMap: Record<string, string> = {
-                    'Men': 'male',
-                    'Women': 'female',
-                    'Kids': 'kids'
-                };
+                const { data, error } = await supabase
+                    .from('stores')
+                    .select('*')
+                    .eq('is_active', true)
+                    .ilike('category', `%${categoryName}%`)
+                    .order('created_at', { ascending: false });
 
-                if (selectedGender && genderMap[selectedGender]) {
-                    query = query.in('gender_filter', [genderMap[selectedGender], 'unisex']);
+                if (error) throw error;
+                if (data) {
+                    setStores(data);
+                    setFilteredStores(data);
                 }
-
-                if (selectedSubcategory !== 'All') {
-                    query = query.ilike('category', `%${selectedSubcategory}%`);
-                } else if (slug) {
-                    const cleanedSlug = slug.replace(/-/g, ' ');
-                    query = query.or(`category.ilike.%${cleanedSlug}%,name.ilike.%${cleanedSlug}%`);
-                }
-
-                const { data, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching products:', error);
-                    // Use dummy products on error
-                    setProducts(filterDummyProducts());
-                } else if (data && data.length > 0) {
-                    setProducts(data);
-                } else {
-                    // Use dummy products when no results from database
-                    setProducts(filterDummyProducts());
-                }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                // Use dummy products on exception
-                setProducts(filterDummyProducts());
+            } catch (error) {
+                console.error('Error fetching stores:', error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        // Filter dummy products based on selected gender and subcategory
-        const filterDummyProducts = () => {
-            let filtered = [...dummyProducts];
+        if (slug) {
+            fetchStores();
+        }
+    }, [slug, supabase]);
 
-            // Filter by gender
-            const genderMap: Record<string, string> = {
-                'Men': 'male',
-                'Women': 'female',
-                'Kids': 'kids'
-            };
-
-            if (selectedGender && genderMap[selectedGender]) {
-                filtered = filtered.filter(p =>
-                    p.gender_filter === genderMap[selectedGender] || p.gender_filter === 'unisex'
-                );
-            }
-
-            // Filter by subcategory
-            if (selectedSubcategory !== 'All') {
-                filtered = filtered.filter(p =>
-                    p.category?.toLowerCase().includes(selectedSubcategory.toLowerCase())
-                );
-            }
-
-            return filtered;
-        };
-
-        fetchProducts();
-    }, [slug, selectedGender, selectedSubcategory]);
+    // Filter stores by search query
+    useEffect(() => {
+        if (searchQuery) {
+            const filtered = stores.filter(store =>
+                store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                store.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredStores(filtered);
+        } else {
+            setFilteredStores(stores);
+        }
+    }, [searchQuery, stores]);
 
     const displayTitle = slug
         ? slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
         : "Category";
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-[#000000]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-slate-600 dark:text-slate-400">Loading stores...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-[#000000] border-x border-gray-200 dark:border-gray-800">
+        <div className="max-w-md mx-auto min-h-screen bg-background-light dark:bg-[#000000] shadow-2xl relative overflow-hidden flex flex-col transition-colors duration-200">
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#000000]/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors">
-                <div className="flex items-center justify-between p-4 h-14">
+            <div className="sticky top-0 z-50 bg-background-light/95 dark:bg-[#000000]/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 p-4">
+                <div className="flex items-center gap-3 mb-3">
                     <button
                         onClick={() => router.back()}
-                        className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-slate-900 dark:text-white"
+                        className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>arrow_back</span>
+                        <span className="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
                     </button>
-                    <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center truncate px-2 text-slate-900 dark:text-white">{displayTitle}</h2>
-                    <button className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-slate-900 dark:text-white">
-                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>search</span>
-                    </button>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex-1">{displayTitle}</h1>
                 </div>
 
-                {/* Subcategory Chips */}
-                <div className="w-full overflow-x-auto no-scrollbar pb-3 px-4">
-                    <style jsx>{`
-                        .no-scrollbar::-webkit-scrollbar {
-                            display: none;
-                        }
-                        .no-scrollbar {
-                            -ms-overflow-style: none;
-                            scrollbar-width: none;
-                        }
-                    `}</style>
-                    <div className="flex gap-3">
-                        {subcategories.map((sub) => (
-                            <button
-                                key={sub}
-                                onClick={() => setSelectedSubcategory(sub)}
-                                className={`flex h-9 shrink-0 items-center justify-center px-5 rounded-full transition-all active:scale-95 ${selectedSubcategory === sub
-                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-slate-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
-                                    }`}
-                            >
-                                <p className="text-sm font-medium whitespace-nowrap">{sub}</p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </header>
-
-            {/* Filter & Sort Bar */}
-            <div className="sticky top-[108px] z-40 bg-gray-50 dark:bg-[#0a0a0a] border-y border-gray-200 dark:border-gray-800 px-4 py-3 flex gap-3 items-center justify-between">
-                {/* Gender Segmented Control */}
-                <div className="flex h-10 flex-1 items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1">
-                    {genders.map((gender) => (
-                        <label
-                            key={gender}
-                            className={`cursor-pointer relative flex-1 h-full flex items-center justify-center rounded-md transition-all ${selectedGender === gender
-                                ? 'bg-white dark:bg-gray-700 shadow-sm'
-                                : 'hover:bg-black/5 dark:hover:bg-white/5'
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="gender"
-                                value={gender}
-                                checked={selectedGender === gender}
-                                onChange={(e) => setSelectedGender(e.target.value)}
-                                className="sr-only"
-                            />
-                            <span className={`text-xs ${selectedGender === gender
-                                ? 'font-semibold text-slate-900 dark:text-white'
-                                : 'font-medium text-slate-600 dark:text-slate-400'
-                                }`}>
-                                {gender}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                    <button className="flex items-center justify-center size-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-slate-700 dark:text-slate-300 shadow-sm active:bg-gray-50 dark:active:bg-gray-700 transition-colors">
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>swap_vert</span>
-                    </button>
-                    <button className="flex items-center justify-center size-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-slate-700 dark:text-slate-300 shadow-sm active:bg-gray-50 dark:active:bg-gray-700 transition-colors">
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>tune</span>
-                    </button>
+                {/* Search Bar */}
+                <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input
+                        type="text"
+                        placeholder="Search stores..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
                 </div>
             </div>
 
-            {/* Product Grid */}
-            <main className="flex-1 p-4">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-60">
-                        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Loading styles...</p>
+            {/* Store Count */}
+            <div className="px-5 py-3 border-b border-gray-200/50 dark:border-gray-800/50">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {filteredStores.length} {filteredStores.length === 1 ? 'store' : 'stores'} found
+                </p>
+            </div>
+
+            {/* Main Content: Store List */}
+            <main className="flex-1 overflow-y-auto px-5 py-4 space-y-5 pb-24">
+                {filteredStores.length === 0 ? (
+                    <div className="text-center py-12">
+                        <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-700 mb-4">store</span>
+                        <p className="text-slate-600 dark:text-slate-400">No stores found in this category</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">Try browsing other categories</p>
                     </div>
-                ) : products.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-                        {products.map((product) => (
-                            <div
-                                key={product.id}
-                                className="group flex flex-col gap-2 cursor-pointer bg-gray-50 dark:bg-gray-800/50 rounded-xl p-2 dark:p-3 hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-300"
-                                onClick={() => router.push(`/products/${product.id}`)}
-                            >
-                                <div className="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                                        style={{ backgroundImage: `url('${product.image_url || 'https://via.placeholder.com/300x400'}')` }}
-                                    />
-                                    <button
-                                        className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-sm text-slate-900 dark:text-white transition-transform active:scale-90"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            // Add to favorites logic
-                                        }}
-                                    >
-                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>favorite_border</span>
-                                    </button>
-                                    {product.is_bestseller && (
-                                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 backdrop-blur-md rounded-md">
-                                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Best Seller</span>
-                                        </div>
+                ) : (
+                    filteredStores.map((store) => (
+                        <div
+                            key={store.id}
+                            className="group bg-white dark:bg-gray-800/50 rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-700/50 hover:border-primary/30 transition-all"
+                        >
+                            <div className="flex gap-4 mb-3">
+                                <div className="w-16 h-16 shrink-0 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-600">
+                                    {store.logo_url ? (
+                                        <img
+                                            className="w-full h-full object-cover"
+                                            src={store.logo_url}
+                                            alt={`${store.name} Logo`}
+                                        />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-3xl text-slate-400">store</span>
                                     )}
                                 </div>
-                                <div className="px-1">
-                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-0.5">{product.brand || 'Brand'}</p>
-                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight mb-1 line-clamp-2">{product.name}</h3>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-500">${product.price.toFixed(2)}</p>
-                                        {product.discount_price && (
-                                            <p className="text-xs text-slate-400 line-through">${product.discount_price.toFixed(2)}</p>
-                                        )}
+                                <div className="flex flex-col flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-gray-900 dark:text-white text-lg font-bold leading-tight truncate">
+                                                {store.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                {store.category && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                                        {store.category}
+                                                    </span>
+                                                )}
+                                                {store.subscription_plan === 'premium' && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                                                        Premium
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button className="text-gray-400 hover:text-red-500 transition-colors">
+                                            <span className="material-symbols-outlined text-[20px]">favorite</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">No products found for this category.</p>
-                    </div>
-                )}
-
-                {/* Infinite Scroll Loading State */}
-                {!isLoading && products.length > 0 && (
-                    <div className="flex flex-col items-center justify-center py-8 gap-3 opacity-60">
-                        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Loading more styles...</p>
-                    </div>
+                            {store.description && (
+                                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-2 mb-4">
+                                    {store.description}
+                                </p>
+                            )}
+                            {store.address && (
+                                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
+                                    <span className="material-symbols-outlined text-[16px]">location_on</span>
+                                    <span>{store.address}</span>
+                                </div>
+                            )}
+                            <Link
+                                href={`/stores/${store.id}`}
+                                className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
+                            >
+                                View Store
+                            </Link>
+                        </div>
+                    ))
                 )}
             </main>
-
-            {/* Floating Cart Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <button
-                    className="flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 hover:bg-primary/90 transition-colors active:scale-95"
-                    onClick={() => router.push('/cart')}
-                >
-                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>shopping_bag</span>
-                    <span className="absolute top-3 right-3 size-2.5 bg-red-500 border-2 border-primary rounded-full"></span>
-                </button>
-            </div>
         </div>
     );
 }

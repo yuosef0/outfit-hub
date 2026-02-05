@@ -26,16 +26,26 @@ export default function DiscoverStoresPage() {
     useEffect(() => {
         const fetchStores = async () => {
             try {
+                console.log('Fetching stores from database...');
                 const { data, error } = await supabase
                     .from('stores')
                     .select('*')
-                    .eq('is_active', true)
+                    // Temporarily removed .eq('is_active', true) to see all stores
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                console.log('Stores query result:', { data, error });
+
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
+
                 if (data) {
+                    console.log(`Found ${data.length} stores`);
                     setStores(data);
                     setFilteredStores(data);
+                } else {
+                    console.log('No data returned from query');
                 }
             } catch (error) {
                 console.error('Error fetching stores:', error);

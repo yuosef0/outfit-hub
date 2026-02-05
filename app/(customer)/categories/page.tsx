@@ -7,7 +7,6 @@ export default function CategoriesPage() {
     return (
         <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light dark:bg-black text-slate-900 dark:text-slate-100 antialiased selection:bg-accent-green/30">
 
-
             {/* Categories Grid */}
             <main className="flex-1 p-4">
                 <div className="grid grid-cols-2 gap-4 pb-4">
@@ -70,67 +69,6 @@ export default function CategoriesPage() {
                         <div className="flex flex-col px-1 pb-1">
                             <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">Shoes</h3>
                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">320+ items</p>
-                        </div>
-                    </Link>
-
-                    {/* Category Card: Accessories */}
-                    <Link href="/categories/accessories" className="group relative flex flex-col gap-3 rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all active:scale-95 duration-200">
-                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-                            <img
-                                alt="Accessories like watches and jewelry"
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGbON6Po-ZPP56wxZkH_LnIAbT5OJX9OqfCZ4abZlzaRNoJcABFZdnltnwWmFehfYPIySKiLPsgl9CPyC6rABrqfmgV8n5cZ7NdrOevNAPELL3IcENXiC1zTCyPty9WUeDNGdT3R-EMGAd16AO5p9S-HGrcQM9pwsOdZax5naGIx5HL6ytKNuU8ZEKNkjhzGytNS_33-CTnZeZESy7Wwc3gblgU9RGu_U14lYjv2XHmnSdgYS1l-Uu4GgJOExQ5C0mt-5riR0XWEQ"
-                            />
-                        </div>
-                        <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">Accessories</h3>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">150+ items</p>
-                        </div>
-                    </Link>
-
-                    {/* Category Card: Bags */}
-                    <Link href="/categories/bags" className="group relative flex flex-col gap-3 rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all active:scale-95 duration-200">
-                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-                            <img
-                                alt="Handbags and backpacks"
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhdvt5OWkIXRqETCKUm1ECRskVMM9QGWc8XTcfksb7XHlpJ5NPLbtCSqDlZ9DT-5C4zrDmSqJHc5s71BDL_6cmPyxHSBOdK1ArfroifZuRuctBjRbyUsWGeOfvrSHcBsflOmKgKeDx_lXTeyl7CeuLWj-79RgpJwkq4dO4inqY-8kFAQqzGi5DvMonpAiMqnZ-6-E820KOD1L0v3s13Y91yKnMZtEFJSnr3FD34hQ6FnGicHmQ4quDY6OSGJUsH_oDyqxMoJRijBM"
-                            />
-                        </div>
-                        <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">Bags</h3>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">90 items</p>
-                        </div>
-                    </Link>
-
-                    {/* Category Card: Sportswear */}
-                    <Link href="/categories/sportswear" className="group relative flex flex-col gap-3 rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all active:scale-95 duration-200">
-                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-                            <img
-                                alt="Sportswear and gym clothing"
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwkyv5PDMcpxl-sK7q8dTcyL7FkBRPDMoosB646PCfYVgvpWB5nNosGh8YUkhIJ2aUwp15i5kbE8w-ABWcXBjTg1qRNCrfb923N887xNNDJPPHV3RiR_bMolpo8qA5Q_vlWhHxBR9TRMVy0Hz0UIdtDTouHWAKmhWkJFTGz50hyXQDJJMT6gff_61NT2Qd1VQBrDXlMHoM4hWHbC6g0FPM2HbCAJowJb69pZTkWHmJBIEzztrBEbNtUTvh9A3V37BAkasLrxyVn0Y"
-                            />
-                            <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">NEW</span>
-                        </div>
-                        <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">Sportswear</h3>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">210+ items</p>
-                        </div>
-                    </Link>
-
-                    {/* Category Card: Beauty */}
-                    <Link href="/categories/beauty" className="group relative flex flex-col gap-3 rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all active:scale-95 duration-200">
-                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-                            <img
-                                alt="Beauty and cosmetics products"
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeZQjWBmcRxwk01Z2tLl7ck69ldnRoXIK_9J95_r9HsDcig3jU0Yqyf-ZLFlehqgbjBUW25KmeTdoFjnntwQNq0WQYcEhOLs5fn5Cg_21TAnc-4ytt9vcLbgON0hSBhMTlSySTt0hsam0zluaQB5REQ_KYSxYeeu2vktO6R3zaLPAG6IA01rkC1WCL2L58fLA1a-K200reBySvK2zBzeeINcnekN7octdkj0RYL3wei9eGmzTA5y8LfcwkAJjKm02Fv1FDriRRp0U"
-                            />
-                        </div>
-                        <div className="flex flex-col px-1 pb-1">
-                            <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight">Beauty</h3>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">400+ items</p>
                         </div>
                     </Link>
                 </div>

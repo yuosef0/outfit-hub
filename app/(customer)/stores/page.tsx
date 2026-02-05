@@ -9,6 +9,7 @@ import type { Store } from '@/lib/types';
 function DiscoverStoresContent() {
     const searchParams = useSearchParams();
     const initialCategory = searchParams.get('category');
+    console.log('Initial Category from URL:', initialCategory);
 
     const [activeCategory, setActiveCategory] = useState(initialCategory || 'All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -76,7 +77,10 @@ function DiscoverStoresContent() {
 
         // Filter by category
         if (activeCategory !== 'All') {
-            filtered = filtered.filter(store => store.category === activeCategory);
+            filtered = filtered.filter(store =>
+                store.category?.toLowerCase() === activeCategory.toLowerCase()
+            );
+            console.log(`Filtering for category: ${activeCategory}. Found ${filtered.length} stores.`);
         }
 
         // Filter by search query

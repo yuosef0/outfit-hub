@@ -58,7 +58,16 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/auth/callback', '/auth/callback-handler'];
+  const publicRoutes = [
+    '/',
+    '/login',
+    '/signup',
+    '/debug',
+    '/merchant/signup',
+    '/auth/callback',
+    '/auth/callback-handler',
+    '/select-governorate'
+  ];
   const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith('/auth/'));
 
   // Get the authenticated user (more secure than getSession)
@@ -88,18 +97,65 @@ export async function middleware(request: NextRequest) {
 
     const userRole = userData?.role || 'customer';
 
-    // Merchant routes - only merchants can access
+    console.log('Middleware - User:', user.id, 'Role:', userRole, 'Path:', pathname);
+
+    // Merchant routes - handle access
     if (pathname.startsWith('/merchant')) {
+      // Allow setup and pending pages for merchants (they don't need a store yet)
+      if (pathname === '/merchant/setup' || pathname === '/merchant/pending') {
+        if (userRole !== 'merchant') {
+          console.log('Non-merchant trying to access setup/pending - redirecting to home');
+          return NextResponse.redirect(new URL('/', request.url));
+        }
+        // Merchant can access setup/pending
+        console.log('Merchant accessing setup/pending - allowed');
+        return response;
+      }
+
+      // Other merchant routes - need to be merchant
       if (userRole !== 'merchant') {
-        // Customer trying to access merchant area - redirect to customer home
+        console.log('Non-merchant trying to access merchant area - redirecting to home');
         return NextResponse.redirect(new URL('/', request.url));
       }
+
+      // Check if merchant has an active store for dashboard and other pages
+      const { data: store } = await supabase
+        .from('stores')
+        .select('id, is_active')
+        .eq('merchant_id', user.id)
+        .maybeSingle();
+
+      if (!store) {
+        console.log('Merchant without store - redirecting to setup');
+        return NextResponse.redirect(new URL('/merchant/setup', request.url));
+      }
+
+      if (!store.is_active) {
+        console.log('Merchant with inactive store - redirecting to pending');
+        return NextResponse.redirect(new URL('/merchant/pending', request.url));
+      }
+
+      // Merchant has active store - allow access
+      console.log('Merchant with active store - allowed');
     }
 
-    // If logged in and trying to access login page, redirect to appropriate dashboard
-    if (pathname === '/login') {
+    // If logged in and trying to access login or signup page, redirect to appropriate dashboard
+    if (pathname === '/login' || pathname === '/signup') {
       if (userRole === 'merchant') {
-        return NextResponse.redirect(new URL('/merchant/dashboard', request.url));
+        // Check if merchant has a store
+        const { data: store } = await supabase
+          .from('stores')
+          .select('id, is_active')
+          .eq('merchant_id', user.id)
+          .maybeSingle();
+
+        if (!store) {
+          return NextResponse.redirect(new URL('/merchant/setup', request.url));
+        } else if (!store.is_active) {
+          return NextResponse.redirect(new URL('/merchant/pending', request.url));
+        } else {
+          return NextResponse.redirect(new URL('/merchant/dashboard', request.url));
+        }
       } else {
         return NextResponse.redirect(new URL('/', request.url));
       }

@@ -50,6 +50,8 @@ export default function SignUpPage() {
             setIsLoading(true);
             setError(null);
 
+            console.log('Signing up with role:', role);
+
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
@@ -64,27 +66,39 @@ export default function SignUpPage() {
 
             if (signUpError) throw signUpError;
 
-            // Update user role in users table
+            console.log('Signup successful, user:', data.user?.id);
+
+            // Upsert user role in users table (insert if not exists, update if exists)
             if (data.user) {
-                const { error: updateError } = await supabase
+                const { error: upsertError } = await supabase
                     .from('users')
-                    .update({
+                    .upsert({
+                        id: data.user.id,
+                        email: email,
                         role: role,
                         full_name: fullName,
-                        phone: phone ? `+20${phone}` : null
-                    })
-                    .eq('id', data.user.id);
+                        phone: phone ? `+20${phone}` : null,
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'id'
+                    });
 
-                if (updateError) console.error('Error updating user role:', updateError);
+                if (upsertError) {
+                    console.error('Error upserting user role:', upsertError);
+                } else {
+                    console.log('User role set to:', role);
+                }
             }
 
             // Redirect based on role
             if (role === 'merchant') {
+                console.log('Redirecting to merchant setup...');
                 router.push('/merchant/setup');
             } else {
                 router.push('/login?message=Check your email to verify your account');
             }
         } catch (err: any) {
+            console.error('Signup error:', err);
             setError(err.message || 'Failed to sign up');
         } finally {
             setIsLoading(false);
@@ -141,16 +155,16 @@ export default function SignUpPage() {
                             type="button"
                             onClick={() => setRole('customer')}
                             className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${role === 'customer'
-                                    ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                                    : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
+                                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-3xl mb-2 text-primary">
                                 person
                             </span>
                             <span className={`font-semibold ${role === 'customer'
-                                    ? 'text-primary'
-                                    : 'text-gray-700 dark:text-gray-300'
+                                ? 'text-primary'
+                                : 'text-gray-700 dark:text-gray-300'
                                 }`}>
                                 عميل
                             </span>
@@ -162,16 +176,16 @@ export default function SignUpPage() {
                             type="button"
                             onClick={() => setRole('merchant')}
                             className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${role === 'merchant'
-                                    ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                                    : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
+                                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                : 'border-gray-300 dark:border-gray-700 hover:border-primary/50'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-3xl mb-2 text-primary">
                                 store
                             </span>
                             <span className={`font-semibold ${role === 'merchant'
-                                    ? 'text-primary'
-                                    : 'text-gray-700 dark:text-gray-300'
+                                ? 'text-primary'
+                                : 'text-gray-700 dark:text-gray-300'
                                 }`}>
                                 تاجر
                             </span>

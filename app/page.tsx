@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SearchModal } from '@/components/SearchModal';
+import WishlistButton from '@/components/WishlistButton';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 
@@ -225,17 +226,21 @@ export default function HomePage() {
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
-                className="flex flex-col gap-3 pb-3 hover:opacity-80 transition-opacity"
+                className="flex flex-col gap-3 pb-3 group relative"
               >
                 <div
-                  className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl"
+                  className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl relative overflow-hidden"
                   style={{
                     backgroundImage: `url("${product.image_urls && product.image_urls.length > 0
                       ? product.image_urls[0]
                       : 'https://via.placeholder.com/300x400'
                       }")`,
                   }}
-                />
+                >
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <WishlistButton productId={product.id} className="!bg-white/90 dark:!bg-black/70" />
+                  </div>
+                </div>
                 <div>
                   <p className="text-text-light-primary dark:text-white text-base font-medium leading-normal">
                     {product.name}

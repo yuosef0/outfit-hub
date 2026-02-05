@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import StoreWishlistButton from '@/components/StoreWishlistButton';
 import type { Store } from '@/lib/types';
 
 function DiscoverStoresContent() {
@@ -218,9 +219,7 @@ function DiscoverStoresContent() {
                                                 )}
                                             </div>
                                         </div>
-                                        <button className="text-gray-400 hover:text-red-500 transition-colors">
-                                            <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                        </button>
+                                        <StoreWishlistButton storeId={store.id} />
                                     </div>
                                 </div>
                             </div>

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import WishlistButton from '@/components/WishlistButton';
+import Toast from '@/components/Toast';
 import type { Product } from '@/lib/types';
 
 export default function ProductDetailPage() {
@@ -18,6 +19,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('M');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const supabase = useMemo(
     () =>
@@ -27,6 +29,25 @@ export default function ProductDetailPage() {
       ),
     []
   );
+
+  const [isInCart, setIsInCart] = useState(false);
+  const [cartItemId, setCartItemId] = useState<string | null>(null);
+
+  // Check if product is in cart
+  const checkCartStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !product) return;
+
+    const { data } = await supabase
+      .from('cart_items')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('product_id', product.id)
+      .maybeSingle();
+
+    setIsInCart(!!data);
+    setCartItemId(data?.id || null);
+  };
 
   // Fetch product details
   useEffect(() => {
@@ -75,6 +96,13 @@ export default function ProductDetailPage() {
     }
   }, [productId, supabase]);
 
+  // Check cart status when product changes
+  useEffect(() => {
+    if (product) {
+      checkCartStatus();
+    }
+  }, [product]);
+
   const nextImage = () => {
     const images = product?.image_urls;
     if (images && images.length > 0) {
@@ -116,6 +144,15 @@ export default function ProductDetailPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-white dark:bg-[#000000] shadow-2xl overflow-hidden">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-white/90 dark:bg-[#000000]/90 backdrop-blur-md border-b border-transparent dark:border-slate-800/50">
         <button
@@ -253,11 +290,63 @@ export default function ProductDetailPage() {
                 />
               </div>
               <button
-                disabled={product.stock_quantity === 0}
-                className="flex-1 h-14 bg-primary rounded-xl flex items-center justify-center gap-2 text-white font-bold text-base shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={async () => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    setToast({ message: 'Please login to manage cart', type: 'error' });
+                    return;
+                  }
+
+                  try {
+                    if (isInCart && cartItemId) {
+                      // Remove from cart
+                      const { error } = await supabase
+                        .from('cart_items')
+                        .delete()
+                        .eq('id', cartItemId);
+
+                      if (!error) {
+                        setIsInCart(false);
+                        setCartItemId(null);
+                        setToast({ message: 'Removed from cart!', type: 'success' });
+                      } else {
+                        setToast({ message: 'Failed to remove from cart', type: 'error' });
+                      }
+                    } else {
+                      // Add to cart
+                      const { data: newItem, error } = await supabase
+                        .from('cart_items')
+                        .insert({
+                          user_id: user.id,
+                          product_id: product.id,
+                          quantity: quantity
+                        })
+                        .select()
+                        .single();
+
+                      if (!error && newItem) {
+                        setIsInCart(true);
+                        setCartItemId(newItem.id);
+                        setToast({ message: 'Added to cart successfully!', type: 'success' });
+                      } else {
+                        setToast({ message: 'Failed to add to cart', type: 'error' });
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error managing cart:', error);
+                    setToast({ message: 'An error occurred. Please try again.', type: 'error' });
+                  }
+                }}
+                disabled={product.stock_quantity === 0 && !isInCart}
+                className={`flex-1 h-14 rounded-xl flex items-center justify-center gap-2 font-bold text-base shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${isInCart
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30'
+                    : 'bg-primary hover:bg-primary/90 text-white shadow-primary/30'
+                  }`}
               >
-                <span className="material-symbols-outlined">shopping_cart</span>
-                {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                <span className="material-symbols-outlined">
+                  {isInCart ? 'remove_shopping_cart' : 'shopping_cart'}
+                </span>
+                {isInCart ? 'Remove from Cart' : product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
             </div>
           </div>

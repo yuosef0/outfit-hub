@@ -237,7 +237,7 @@ export default function HomePage() {
                       }")`,
                   }}
                 >
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2">
                     <WishlistButton productId={product.id} className="!bg-white/90 dark:!bg-black/70" />
                   </div>
                 </div>

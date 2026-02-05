@@ -1,26 +1,50 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import type { CartItem, Product } from '@/lib/types';
 
 interface CartDrawerProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+interface GroupedCartItems {
+    [storeId: string]: {
+        storeName: string;
+        storeLogo?: string;
+        items: (CartItem & { products: Product })[];
+    };
+}
+
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const [isVisible, setIsVisible] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const [cartItems, setCartItems] = useState<(CartItem & { products: Product })[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const supabase = useMemo(
+        () =>
+            createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            ),
+        []
+    );
 
     // Handle animation state
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
             document.body.style.overflow = 'hidden';
+            fetchCart();
         } else {
             const timer = setTimeout(() => setIsVisible(false), 300); // Match transition duration
             document.body.style.overflow = '';
+            setCartItems([]); // Clear items on close to refresh next time
             return () => clearTimeout(timer);
         }
     }, [isOpen]);
@@ -29,6 +53,129 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     useEffect(() => {
         onClose();
     }, [pathname]);
+
+    const fetchCart = async () => {
+        setIsLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // Step 1: Fetch Cart Items (No Join)
+            const { data: cartData, error: cartError } = await supabase
+                .from('cart_items')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (cartError) {
+                console.error('Error fetching cart items:', cartError.message || cartError);
+                return;
+            };
+
+            if (!cartData || cartData.length === 0) {
+                setCartItems([]);
+                return;
+            }
+
+            // Step 2: Fetch Products
+            const productIds = cartData.map(item => item.product_id);
+            const { data: productsData, error: productsError } = await supabase
+                .from('products')
+                .select(`
+                    *,
+                    stores:store_id (
+                        id,
+                        name,
+                        logo_url
+                    )
+                `)
+                .in('id', productIds);
+
+            if (productsError) {
+                console.error('Error fetching products:', productsError.message || productsError);
+                return;
+            }
+
+            // Step 3: Merge
+            const mergedItems = cartData.map((cartItem) => {
+                const product = productsData?.find((p) => p.id === cartItem.product_id);
+                return product ? { ...cartItem, products: product } : null;
+            }).filter(item => item !== null) as (CartItem & { products: Product })[];
+
+            setCartItems(mergedItems);
+
+        } catch (error: any) {
+            console.error('Error fetching cart in drawer:', error.message || error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updateQuantity = async (itemId: string, newQuantity: number) => {
+        if (newQuantity < 1) return;
+
+        // Optimistic update
+        setCartItems(prev =>
+            prev.map(item =>
+                item.id === itemId ? { ...item, quantity: newQuantity } : item
+            )
+        );
+
+        try {
+            const { error } = await supabase
+                .from('cart_items')
+                .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
+                .eq('id', itemId);
+
+            if (error) {
+                console.error("Error updating quantity", error);
+                // Revert or re-fetch could be added here
+                fetchCart();
+            }
+        } catch (error) {
+            console.error("Error updating quantity", error);
+        }
+    };
+
+    const removeItem = async (itemId: string) => {
+        // Optimistic update
+        const previousItems = [...cartItems];
+        setCartItems(prev => prev.filter(item => item.id !== itemId));
+
+        try {
+            const { error } = await supabase
+                .from('cart_items')
+                .delete()
+                .eq('id', itemId);
+
+            if (error) {
+                setCartItems(previousItems);
+                console.error('Error removing item:', error);
+            }
+        } catch (error) {
+            setCartItems(previousItems);
+            console.error('Error removing item:', error);
+        }
+    };
+
+    const groupedItems: GroupedCartItems = cartItems.reduce((acc, item) => {
+        // Ensure product and store exist before grouping
+        if (!item.products?.stores) return acc;
+
+        const storeId = item.products.stores.id;
+        if (!acc[storeId]) {
+            acc[storeId] = {
+                storeName: item.products.stores.name,
+                storeLogo: item.products.stores.logo_url,
+                items: [],
+            };
+        }
+        acc[storeId].items.push(item);
+        return acc;
+    }, {} as GroupedCartItems);
+
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0);
+    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     if (!isVisible && !isOpen) return null;
 
@@ -53,185 +200,153 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         >
                             <span className="material-symbols-outlined text-[24px]">close</span>
                         </button>
-                        <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">My Cart</h1>
-                        <button className="h-10 px-2 flex items-center justify-center text-primary font-semibold text-sm hover:opacity-80 transition-opacity">
-                            Edit
-                        </button>
+                        <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">My Cart ({totalItems})</h1>
+                        <Link
+                            href="/cart"
+                            onClick={onClose}
+                            className="h-10 px-2 flex items-center justify-center text-primary font-semibold text-sm hover:opacity-80 transition-opacity"
+                        >
+                            View All
+                        </Link>
                     </div>
                 </header>
 
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4">
-                    {/* POPULATED STATE (Main View) */}
-                    <div className="space-y-6">
-                        {/* Store Group 1 */}
-                        <section className="flex flex-col gap-3">
-                            {/* Store Header */}
-                            <div className="flex items-center gap-3 px-1 py-1">
-                                <div className="size-8 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
-                                    <img alt="Zara Logo" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5ot0S9VTf2WRxaqb-jEQE8yPBXN_slGLt-b0FGqEtSFWgEN6rO04Am3w4hqcl06foUR5PjLlazty6NWIxMvZg3rTO2aTBHq48yyB33CTWS_B_4MPHg5sd7TeiVgX0DVo6GszWc0LsehDf7vZoURAxacS-m4C8stod4k_XYMrM_OO00HP3BX31fu9_ue8r-WdGOsWuwbJLUPtRLax_U_3ivI21VF5up-nKqxprGKR0q_Q9GMZWLttPN3XSDpCuXyJavs15S4-FzOo" />
-                                </div>
-                                <div className="flex-1 flex items-center gap-1">
-                                    <h2 className="font-semibold text-sm text-white dark:text-white mix-blend-difference">Zara Official Store</h2>
-                                    <span className="material-symbols-outlined text-white dark:text-white mix-blend-difference text-[18px]">chevron_right</span>
-                                </div>
-                            </div>
-                            {/* Cart Item 1 */}
-                            <article className="bg-transparent dark:bg-transparent rounded-2xl p-3 shadow-none flex gap-4 transition-colors border border-slate-200 dark:border-gray-800">
-                                {/* Product Image */}
-                                <div className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
-                                    <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Folded light blue linen shirt" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9MN-2ZGdAlq8y2srfpsFR9JyVdSYrMbC8sIdsm57yH3H36q5Azk0MF3IyDyORAHn37ZuixSD9Vli5KFgFsHJykq0Af6iVOelLK1lUmFgt-iwFC_1L606NqxvwO4o1uYODZbBEu0O8ZnVPK6iADTQTVNLgujj4Hd4ZiK516quvPWHEBumxZ1ljPhOMaPyVZv7z0_DRBL95QqdcZgvaKZXxqhEu7OXy4FSudmhTZCEwm1QsVy0y_UP0PNyeaC0zNWfNDLyzwqJwkKk')" }}></div>
-                                </div>
-                                {/* Content */}
-                                <div className="flex flex-col flex-1 justify-between py-0.5">
-                                    <div>
-                                        <div className="flex justify-between items-start gap-3">
-                                            <h3 className="font-semibold text-sm text-white dark:text-white mix-blend-difference leading-snug line-clamp-2">Premium Slim Fit Linen Shirt</h3>
-                                            <button aria-label="Remove item" className="text-white dark:text-white mix-blend-difference hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 p-1 -mr-1 -mt-1">
-                                                <span className="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                        <p className="text-xs font-medium text-white dark:text-white mix-blend-difference mt-1.5">Color: Navy • Size: L</p>
-                                    </div>
-                                    <div className="flex items-end justify-between mt-3">
-                                        <span className="font-bold text-base text-primary dark:text-blue-400">$45.00</span>
-                                        {/* Quantity Stepper */}
-                                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 h-8 shadow-inner">
-                                            <button aria-label="Decrease quantity" className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">remove</span>
-                                            </button>
-                                            <span className="w-8 text-center text-xs font-semibold text-white dark:text-white mix-blend-difference tabular-nums">1</span>
-                                            <button aria-label="Increase quantity" className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">add</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                            {/* Cart Item 2 */}
-                            <article className="bg-transparent dark:bg-transparent rounded-2xl p-3 shadow-none flex gap-4 transition-colors border border-slate-200 dark:border-gray-800">
-                                <div className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
-                                    <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Black leather chelsea boots" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3yeth4lw9VBmeUw5ka3CLcxmWuvisHBkUBzzsRjNfTroRyGdoe7E5kn8VNYoLOOwsVmlByn3zJ4fdn9OoQuPu7bDtR6K4Baeo7fv3hW8FpEHJgjMnXvIBp6LMwp_urG0nmbX-i2Qn6pT1GbOJTNhUbhaHaGG9q5dZLEPaPzi-le--GnN50TSlJi6gfrvyzthf2yZgs8W8Wn0_TuGCnjhB7rtUswpKZeu69PIaaZY-Mn0dsg2LYzVrOFALip-nJVEA7o-KTvxnKng')" }}></div>
-                                </div>
-                                <div className="flex flex-col flex-1 justify-between py-0.5">
-                                    <div>
-                                        <div className="flex justify-between items-start gap-3">
-                                            <h3 className="font-semibold text-sm text-white dark:text-white mix-blend-difference leading-snug line-clamp-2">Classic Leather Chelsea Boots</h3>
-                                            <button aria-label="Remove item" className="text-white dark:text-white mix-blend-difference hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 p-1 -mr-1 -mt-1">
-                                                <span className="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                        <p className="text-xs font-medium text-white dark:text-white mix-blend-difference mt-1.5">Color: Black • Size: 42</p>
-                                    </div>
-                                    <div className="flex items-end justify-between mt-3">
-                                        <span className="font-bold text-base text-primary dark:text-blue-400">$120.00</span>
-                                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 h-8 shadow-inner">
-                                            <button className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">remove</span>
-                                            </button>
-                                            <span className="w-8 text-center text-xs font-semibold text-white dark:text-white mix-blend-difference tabular-nums">1</span>
-                                            <button className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">add</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        </section>
-                        {/* Store Group 2 */}
-                        <section className="flex flex-col gap-3">
-                            <div className="flex items-center gap-3 px-1 py-1">
-                                <div className="size-8 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
-                                    <img alt="Nike Logo" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCam67M8TU117I_QpWypqO8lvG4XnedwauPTmxBn_zz55To8Gjfjn4cv6cvVERFSy57Sha6PPrFvfOy9Adix8rCxjYLZHEfDn4qc-2WmdF1yUg1KTpY6z3PKL16v9NK6PRyB9SGQqhIBaLOQHLg_4c9JWyPUkG85b0ZNR18vv95fFpkThdbgVg96rXYG-hXV2Rpfx5Yviur6iZk3NbnC6tv-ram1CwnqLIA7WXrlOZ9wnJdLKJ8Td3gVZ0AeCI3Kk_yTUl5lwPcbno" />
-                                </div>
-                                <div className="flex-1 flex items-center gap-1">
-                                    <h2 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Nike Store</h2>
-                                    <span className="material-symbols-outlined text-white dark:text-white mix-blend-difference text-[18px]">chevron_right</span>
-                                </div>
-                            </div>
-                            {/* Cart Item 3 */}
-                            <article className="bg-transparent dark:bg-transparent rounded-2xl p-3 shadow-none flex gap-4 transition-colors border border-slate-200 dark:border-gray-800">
-                                <div className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
-                                    {/* Using a slight opacity overlay on the image just for a modern touch */}
-                                    <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Red Nike sneakers angled side view" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDjj8sHpOgznPLvngXYGjkYc0Rf3cfSn8UsDpqItx2LWWZ4yOzeoJQXycITSlBanWC4NY-OQYsTVphXEJY78DMvtuTkt0H8OT2fLH4_j9qofbFOQOHB0iqbrNzFO8WcrvR0UkgAzjuRiyq-RrUhGqkG4rxZkTevtycZUsbJLU9-sTO74wbCmvRv4hgBVE1ah4tDits6W8HhaFCinzLFydMkrw6TRraoVQkGIeNpaVhT3Jzx9HucLArU_DdxffHBr7-2ViRHIkK13Fw')" }}></div>
-                                </div>
-                                <div className="flex flex-col flex-1 justify-between py-0.5">
-                                    <div>
-                                        <div className="flex justify-between items-start gap-3">
-                                            <h3 className="font-semibold text-sm text-white dark:text-white mix-blend-difference leading-snug line-clamp-2">Nike Air Max 270 React</h3>
-                                            <button aria-label="Remove item" className="text-white dark:text-white mix-blend-difference hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 p-1 -mr-1 -mt-1">
-                                                <span className="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                        <p className="text-xs font-medium text-white dark:text-white mix-blend-difference mt-1.5">Color: Red • Size: 10</p>
-                                    </div>
-                                    <div className="flex items-end justify-between mt-3">
-                                        <span className="font-bold text-base text-primary dark:text-blue-400">$150.00</span>
-                                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 h-8 shadow-inner">
-                                            <button className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">remove</span>
-                                            </button>
-                                            <span className="w-8 text-center text-xs font-semibold text-white dark:text-white mix-blend-difference tabular-nums">1</span>
-                                            <button className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all">
-                                                <span className="material-symbols-outlined text-[16px] font-bold">add</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        </section>
-                    </div>
-
-
-                    {/* EMPTY STATE PREVIEW */}
-                    <div className="mt-12 mb-6">
-                        <div className="flex items-center gap-4 py-4">
-                            <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Empty State Variant</span>
-                            <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-40">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
-                        <div className="flex flex-col items-center justify-center py-10 px-6 bg-transparent dark:bg-transparent rounded-3xl shadow-none border border-slate-200 dark:border-gray-800">
+                    ) : cartItems.length > 0 ? (
+                        <div className="space-y-6">
+                            {Object.entries(groupedItems).map(([storeId, { storeName, storeLogo, items }]) => (
+                                <section key={storeId} className="flex flex-col gap-3">
+                                    {/* Store Header */}
+                                    <div className="flex items-center gap-3 px-1 py-1">
+                                        <div className="size-8 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+                                            {storeLogo ? (
+                                                <img alt={storeName} className="w-full h-full object-cover" src={storeLogo} />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-primary text-base">store</span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 flex items-center gap-1">
+                                            <h2 className="font-semibold text-sm text-slate-900 dark:text-slate-100">{storeName}</h2>
+                                            <span className="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+                                        </div>
+                                    </div>
+
+                                    {items.map((item) => (
+                                        <article key={item.id} className="bg-transparent dark:bg-transparent rounded-2xl p-3 shadow-none flex gap-4 transition-colors border border-slate-200 dark:border-slate-800/50">
+                                            {/* Product Image */}
+                                            <div className="w-24 h-28 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative group">
+                                                <Link href={`/products/${item.products.id}`} onClick={onClose}>
+                                                    <img
+                                                        src={item.products.image_urls?.[0] || 'https://via.placeholder.com/300x400'}
+                                                        alt={item.products.name}
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                </Link>
+                                            </div>
+                                            {/* Content */}
+                                            <div className="flex flex-col flex-1 justify-between py-0.5">
+                                                <div>
+                                                    <div className="flex justify-between items-start gap-3">
+                                                        <Link href={`/products/${item.products.id}`} onClick={onClose}>
+                                                            <h3 className="font-semibold text-sm text-slate-900 dark:text-white leading-snug line-clamp-2 hover:text-primary transition-colors">
+                                                                {item.products.name}
+                                                            </h3>
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => removeItem(item.id)}
+                                                            aria-label="Remove item"
+                                                            className="text-slate-500 hover:text-red-500 transition-colors shrink-0 p-1 -mr-1 -mt-1"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                        </button>
+                                                    </div>
+                                                    {item.products.category && (
+                                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1.5">{item.products.category}</p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-end justify-between mt-3">
+                                                    <span className="font-bold text-base text-primary dark:text-blue-400">${item.products.price.toFixed(2)}</span>
+                                                    {/* Quantity Stepper */}
+                                                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 h-8 shadow-inner">
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                            aria-label="Decrease quantity"
+                                                            className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px] font-bold">remove</span>
+                                                        </button>
+                                                        <span className="w-8 text-center text-xs font-semibold text-slate-900 dark:text-white tabular-nums">
+                                                            {item.quantity}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            aria-label="Increase quantity"
+                                                            className="size-6 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded shadow-sm hover:scale-105 active:scale-95 transition-all"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px] font-bold">add</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </section>
+                            ))}
+                        </div>
+                    ) : (
+                        // Empty State
+                        <div className="flex flex-col items-center justify-center py-10 px-6 h-full">
                             <div className="w-48 h-48 mb-6 flex items-center justify-center relative">
-                                {/* Modern Minimalist Illustration constructed with divs and icons */}
                                 <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl"></div>
                                 <div className="relative z-10 p-6 bg-slate-50 dark:bg-slate-800 rounded-full shadow-sm">
                                     <span className="material-symbols-outlined text-[64px] text-primary/80">shopping_bag</span>
                                 </div>
-                                {/* Decorative elements */}
-                                <div className="absolute top-10 right-10 p-2 bg-white dark:bg-slate-700 rounded-full shadow-md animate-bounce" style={{ animationDuration: "3s" }}>
-                                    <span className="material-symbols-outlined text-xl text-yellow-400">star</span>
-                                </div>
-                                <div className="absolute bottom-10 left-8 p-1.5 bg-white dark:bg-slate-700 rounded-full shadow-md">
-                                    <span className="material-symbols-outlined text-lg text-red-400">favorite</span>
-                                </div>
                             </div>
                             <div className="max-w-[280px] flex flex-col items-center gap-3">
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white text-center">Your cart is empty</h3>
-                                <p className="text-sm text-black dark:text-white text-center leading-relaxed">
+                                <p className="text-sm text-slate-500 dark:text-slate-400 text-center leading-relaxed">
                                     Looks like you haven't added anything to your cart yet. Explore our latest collections!
                                 </p>
                             </div>
-                            <button className="mt-8 flex items-center justify-center px-8 h-11 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition-all shadow-glow hover:shadow-lg active:scale-95">
+                            <Link
+                                href="/"
+                                onClick={onClose}
+                                className="mt-8 flex items-center justify-center px-8 h-11 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition-all shadow-glow hover:shadow-lg active:scale-95"
+                            >
                                 Start Shopping
-                            </button>
+                            </Link>
                         </div>
-                    </div>
-                    {/* Footer (Now part of scrollable content) */}
-                    <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-6 pb-8">
+                    )}
+                </main>
+
+                {/* Footer (Actions) */}
+                {cartItems.length > 0 && (
+                    <div className="mt-auto border-t border-slate-200 dark:border-slate-800 p-4 pb-8 bg-background-light dark:bg-background-dark">
                         <div className="w-full space-y-4">
                             <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-black dark:text-white mix-blend-difference">Subtotal (3 items)</span>
+                                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Subtotal ({totalItems} items)</span>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-xl font-bold text-black dark:text-white tracking-tight mix-blend-difference">$315.00</span>
+                                    <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">${subtotal.toFixed(2)}</span>
                                 </div>
                             </div>
-                            <button className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white h-12 rounded-xl font-bold text-base transition-all shadow-glow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                            <button
+                                onClick={() => {
+                                    onClose();
+                                    router.push('/cart');
+                                }}
+                                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white h-12 rounded-xl font-bold text-base transition-all shadow-glow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                            >
                                 Proceed to Checkout
                                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                             </button>
                         </div>
                     </div>
-                </main>
+                )}
             </div>
         </div>
     );

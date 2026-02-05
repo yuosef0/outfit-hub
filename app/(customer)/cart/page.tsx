@@ -40,28 +40,53 @@ export default function CartPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      // Step 1: Fetch Cart Items
+      const { data: cartData, error: cartError } = await supabase
         .from('cart_items')
-        .select(`
-                    *,
-                    products:product_id (
-                        *,
-                        stores:store_id (
-                            id,
-                            name,
-                            logo_url
-                        )
-                    )
-                `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      if (data) {
-        setCartItems(data as any);
+      if (cartError) {
+        console.error('Error fetching cart_items:', cartError.message || cartError);
+        throw cartError;
       }
-    } catch (error) {
-      console.error('Error fetching cart:', error);
+
+      if (!cartData || cartData.length === 0) {
+        setCartItems([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 2: Fetch Products for these items
+      const productIds = cartData.map(item => item.product_id);
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          stores:store_id (
+            id,
+            name,
+            logo_url
+          )
+        `)
+        .in('id', productIds);
+
+      if (productsError) {
+        console.error('Error fetching products for cart:', productsError.message || productsError);
+        throw productsError;
+      }
+
+      // Step 3: Merge data
+      const mergedItems = cartData.map((cartItem) => {
+        const product = productsData?.find((p) => p.id === cartItem.product_id);
+        return product ? { ...cartItem, products: product } : null;
+      }).filter(item => item !== null) as (CartItem & { products: Product })[];
+
+      setCartItems(mergedItems);
+
+    } catch (error: any) {
+      console.error('Error in fetchCart:', error.message || error);
     } finally {
       setIsLoading(false);
     }
